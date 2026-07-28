@@ -150,6 +150,18 @@ Every report should include a remediation plan ordered by risk and unblock value
 
 Each action should name the smallest next proof that would raise confidence.
 
+## How This Differs
+
+`project-readiness-auditor` is an evidence-based audit skill, not a generic static scanner, marketplace, or full software delivery framework.
+
+| Nearby project | What it does | How `project-readiness-auditor` differs |
+|---|---|---|
+| [`howells/arc`](https://github.com/howells/arc) | Provides a broad Claude/Codex delivery workflow with skills for ideation, implementation, testing, audit, launch, commit, and release | Focuses narrowly on independent readiness audits: documentation-vs-code checks, evidence levels, missing evidence, readiness stage, severity-ranked findings, and a closure plan |
+| [`github/awesome-copilot` `acquire-codebase-knowledge`](https://github.com/github/awesome-copilot/blob/main/docs/README.skills.md) | Maps, documents, and helps users onboard into an existing codebase | Uses codebase mapping as one audit step, then goes further into readiness verdicts, production evidence, contract risks, severity, residual risk, and next validation steps |
+| [`github/awesome-copilot` `acreadiness-assess`](https://github.com/github/awesome-copilot/blob/main/docs/README.skills.md) | Runs AgentRC readiness assessment and produces an AI-readiness dashboard for a repository | Audits software/project readiness rather than AI-agent readiness: docs-vs-code, reproducibility, runtime proof, deployment, contracts, security, reliability, and truthful readiness claims |
+| [`microsoft/agentrc`](https://github.com/microsoft/agentrc) | Reads a codebase, scores AI-readiness, generates agent instruction files, evals, and development configuration, and can monitor drift in CI | Treats AI-readiness as adjacent evidence, but produces a project audit report about actual product state, implementation gaps, operational risk, and evidence-backed readiness stage |
+| [`oimiragieo/agent-studio`](https://github.com/oimiragieo/agent-studio) | Provides a large agent/skill framework with orchestration, plugin marketplace, headless execution, model routing, code review pipeline, and readiness scoring | Keeps the package small and methodology-specific: one installable audit skill with focused references, explicit stop rules, and no broad runtime or marketplace layer |
+
 ## Evidence Model
 
 Use evidence levels to avoid overclaiming:
