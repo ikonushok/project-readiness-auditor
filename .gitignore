@@ -1,0 +1,12 @@
+.DS_Store
+.idea/
+__pycache__/
+*.pyc
+
+# Local assistant workspace files. Keep these on the author's machine only.
+/.claude/
+/agents/
+/AGENTS.md
+/CLAUDE.md
+/.agents/
+/.codex/
