@@ -12,6 +12,8 @@ Evidence-based project audit methodology and Codex skill for fast third-party so
 
 The core rule is simple: treat README files, specs, and presentations as intent until code, tests, configuration, CI, deployment files, migrations, or inspected runtime output prove the claim.
 
+Previous audit reports are excluded from new-audit evidence. They must not be used as examples, sources of findings, source-of-truth evidence, or checklists. When comparison is requested, complete the new audit from primary evidence first, then compare against older reports separately.
+
 This repository follows the same public-package shape as [`agent-pack-designer`](https://github.com/ikonushok/agent-pack-designer): a compact installable skill, reference files loaded only when needed, package validation scripts, and root documentation that explains the operating model.
 
 Tags: `project-audit`, `code-review`, `readiness-assessment`, `software-quality`, `evidence-based`, `technical-due-diligence`, `risk-analysis`, `markdown-reports`.
@@ -67,6 +69,16 @@ Do not call a candidate a proven bug until it is reproduced by a focused test, i
 
 Creating reproduction files, editing tests, installing dependencies, or running mutating commands requires explicit approval for the exact files and commands. Changing production code for a reproduced bug requires a second explicit approval for the exact production files and transformation.
 
+Classify finding strength before writing the report:
+
+- `reproduced`: an approved test, smoke check, or command demonstrated the behavior;
+- `direct code contradiction`: code contradicts itself without depending on framework/runtime behavior;
+- `static config contradiction`: visible config cannot satisfy the target runtime contour;
+- `framework/runtime candidate`: the claim depends on route ordering, middleware, dependency injection, ORM, queue, or external-service behavior that was not executed;
+- `product/API gap`: implementation is internally consistent but incomplete or ambiguous against stated intent.
+
+Route ordering, middleware, dependency injection, database behavior, queue delivery, and external-service behavior are candidates until runtime, framework introspection, an existing test, or an approved reproducer proves them.
+
 ### 4. Check Reproducibility
 
 Inspect whether a new reviewer can rebuild confidence from scratch:
@@ -82,7 +94,9 @@ Inspect whether a new reviewer can rebuild confidence from scratch:
 - seed data or fixtures;
 - CI or local verification commands.
 
-Missing reproducibility evidence lowers the validation level even when the code looks reasonable.
+For config-heavy projects, compare settings schema and required environment variables against env examples, compose, Helm, CI, and deployment docs. Also compare monitoring scrape targets, ports, and metrics paths against the services that are actually deployed.
+
+Missing reproducibility evidence lowers the validation level and readiness estimate even when the code looks reasonable.
 
 ### 5. Verify Cross-Part Contracts
 
@@ -94,6 +108,7 @@ Check both sides of important contracts, or mark the missing side as missing evi
 - Queue producers vs consumers.
 - SQLAlchemy or ORM models vs migrations.
 - Environment settings vs compose, Helm, CI, and deployment docs.
+- Monitoring targets vs service names, ports, metrics paths, and deployment contours.
 - Snapshot, clip, file, S3, or object-key paths across producers and consumers.
 - Error shapes, status codes, required fields, optional fields, and serialization formats.
 
@@ -107,6 +122,8 @@ Look for unfinished or misleading paths:
 - dead routes;
 - unused modules;
 - imported but unregistered routers;
+- registered routes with no reachable client and clients with no registered backend route;
+- routers, services, queues, or admin screens that exist but are not wired into the application entrypoint;
 - UI pages without API methods;
 - schemas with fields that services do not save or return;
 - tests that cover implementation details but miss user-visible behavior.
@@ -188,6 +205,17 @@ reports/customer/<project-slug>/bug-audit-YYYY-MM-DD.md
 
 A cross-project index may link to the per-project reports, but it must not replace them.
 
+## Public Example
+
+See the public customer example report pack for [`ikonushok/recommender-systems-from-zero`](reports/customer/recommender-systems-from-zero/):
+
+- [`index.md`](reports/customer/recommender-systems-from-zero/index.md)
+- [`code-only-project-readiness-2026-07-28.md`](reports/customer/recommender-systems-from-zero/code-only-project-readiness-2026-07-28.md)
+- [`project-readiness-2026-07-28.md`](reports/customer/recommender-systems-from-zero/project-readiness-2026-07-28.md)
+- [`bug-audit-2026-07-28.md`](reports/customer/recommender-systems-from-zero/bug-audit-2026-07-28.md)
+
+Private validation runs and non-public target reports belong under `reports/validation/` and are ignored by Git. Public examples belong under `reports/customer/`.
+
 ## How This Differs
 
 `project-readiness-auditor` is an evidence-based audit skill, not a generic static scanner, marketplace, or full software delivery framework.
@@ -253,6 +281,7 @@ The installable Codex skill is under [`project-readiness-auditor/`](project-read
 - [`SKILL.md`](project-readiness-auditor/SKILL.md): compact skill entry point and default workflow.
 - [`agents/openai.yaml`](project-readiness-auditor/agents/openai.yaml): Codex interface metadata.
 - [`references/audit-methodology.md`](project-readiness-auditor/references/audit-methodology.md): detailed audit workflow.
+- [`references/prior-report-freeze-validation-scenario.md`](project-readiness-auditor/references/prior-report-freeze-validation-scenario.md): validation scenario for older-report isolation.
 - [`references/readiness-rubric.md`](project-readiness-auditor/references/readiness-rubric.md): readiness stages, severities, evidence strength, verdicts, and validation levels.
 - [`references/report-template.md`](project-readiness-auditor/references/report-template.md): Markdown report shape.
 - [`scripts/validate_skill.py`](project-readiness-auditor/scripts/validate_skill.py): static package validation.
@@ -308,11 +337,12 @@ Expected result:
 RESULT: PASS L0
 ```
 
-Current validation level: L0 until the skill package passes static validation and at least one realistic project-audit simulation is recorded.
+Current validation level: L3 with residual risk. The public `recommender-systems-from-zero` customer report pack records one real project audit simulation with code-only, project-readiness, and bug-audit outputs. Private validation artifacts remain local under ignored `reports/validation/`.
 
 ## Repository Layout
 
 - [`project-readiness-auditor/`](project-readiness-auditor/): public installable skill package.
+- [`reports/customer/recommender-systems-from-zero/`](reports/customer/recommender-systems-from-zero/): public example report pack.
 - [`.github/workflows/validate.yml`](.github/workflows/validate.yml): package validation in CI.
 - [`CHANGELOG.md`](CHANGELOG.md): release notes.
 - [`README.md`](README.md): public project overview and audit methodology.

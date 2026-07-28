@@ -1,7 +1,7 @@
 interface:
   display_name: "Project Readiness Auditor"
   short_description: "Audit project readiness from repository evidence"
-  default_prompt: "Use $project-readiness-auditor to audit this project for readiness risks and mandatory bug candidates from README.md, code, tests, configuration, and deployment evidence."
+  default_prompt: "Use $project-readiness-auditor to audit this project for readiness risks and mandatory bug candidates from README.md, code, tests, configuration, and deployment evidence. Do not use previous audit reports as examples, evidence, finding sources, or checklists; if comparison is requested, complete the new audit first and compare only afterward."
 
 policy:
   allow_implicit_invocation: true
