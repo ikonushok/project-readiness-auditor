@@ -49,7 +49,25 @@ Create the smallest defensible map of the project:
 
 If documentation is missing or weak, infer the factual project goals from names, routes, UI screens, DTOs, models, queues, deployment topology, and tests.
 
-### 3. Check Reproducibility
+### 3. Mandatory Bug Discovery
+
+Run bug discovery in every audit. It is not an optional mode. After the initial project map is clear enough, trace reachable inputs, contracts, state transitions, edge cases, error paths, and real callers.
+
+For each concrete candidate, record:
+
+- expected behavior and contract evidence;
+- likely actual behavior;
+- triggering input or state;
+- source location;
+- impact;
+- confidence;
+- smallest test-first reproduction plan.
+
+Do not call a candidate a proven bug until it is reproduced by a focused test, inspected command output, or direct code contradiction strong enough to prove the behavior. If no defensible candidate survives, report `NO_BUG_PROVEN` for the inspected scope and state the next useful evidence.
+
+Creating reproduction files, editing tests, installing dependencies, or running mutating commands requires explicit approval for the exact files and commands. Changing production code for a reproduced bug requires a second explicit approval for the exact production files and transformation.
+
+### 4. Check Reproducibility
 
 Inspect whether a new reviewer can rebuild confidence from scratch:
 
@@ -66,7 +84,7 @@ Inspect whether a new reviewer can rebuild confidence from scratch:
 
 Missing reproducibility evidence lowers the validation level even when the code looks reasonable.
 
-### 4. Verify Cross-Part Contracts
+### 5. Verify Cross-Part Contracts
 
 Check both sides of important contracts, or mark the missing side as missing evidence.
 
@@ -81,7 +99,7 @@ Check both sides of important contracts, or mark the missing side as missing evi
 
 Contract mismatches are often higher priority than isolated code-style issues because they break integrated use.
 
-### 5. Search For Incompleteness
+### 6. Search For Incompleteness
 
 Look for unfinished or misleading paths:
 
@@ -95,7 +113,7 @@ Look for unfinished or misleading paths:
 
 Do not automatically call every marker a bug. Classify it by impact and evidence.
 
-### 6. Review Reliability Risks
+### 7. Review Reliability Risks
 
 Prioritize risks that can cause real runtime failure or data inconsistency:
 
@@ -110,7 +128,7 @@ Prioritize risks that can cause real runtime failure or data inconsistency:
 - blocking I/O inside async code;
 - resource cleanup and shutdown behavior.
 
-### 7. Review Security Risks
+### 8. Review Security Risks
 
 Check:
 
@@ -125,7 +143,7 @@ Check:
 
 Security claims require actual middleware, permissions, configuration, and tests or runtime evidence. Documentation alone is not enough.
 
-### 8. Classify Readiness Stage
+### 9. Classify Readiness Stage
 
 Use stage labels as evidence-backed maturity states, not opinions:
 
@@ -139,7 +157,7 @@ Use stage labels as evidence-backed maturity states, not opinions:
 
 Never claim `Production-ready` without evidence for reproducible setup, deployment, migrations, security, observability, rollback, and critical tests.
 
-### 9. Produce A Prioritized Closure Plan
+### 10. Produce A Prioritized Closure Plan
 
 Every report should include a remediation plan ordered by risk and unblock value:
 
@@ -149,6 +167,26 @@ Every report should include a remediation plan ordered by risk and unblock value
 - then improve documentation only after implementation facts are clear.
 
 Each action should name the smallest next proof that would raise confidence.
+
+### 11. Generate Per-Project Report Packs
+
+When several projects are supplied, `project-readiness-auditor` must split them first. The correct output is one report pack per project, not one combined report.
+
+Supported customer report types:
+
+- `code-only-project-readiness`: a code-only baseline that ignores documentation as proof.
+- `project-readiness`: readiness against stated or inferred goals, using documentation as intent and implementation evidence as proof.
+- `bug-audit`: mandatory ranked bug candidates with file evidence, trigger conditions, confidence, approval-gated reproduction plan, and approval-gated fix path.
+
+Use stable report paths when writing files:
+
+```text
+reports/customer/<project-slug>/code-only-project-readiness-YYYY-MM-DD.md
+reports/customer/<project-slug>/project-readiness-YYYY-MM-DD.md
+reports/customer/<project-slug>/bug-audit-YYYY-MM-DD.md
+```
+
+A cross-project index may link to the per-project reports, but it must not replace them.
 
 ## How This Differs
 
@@ -161,6 +199,12 @@ Each action should name the smallest next proof that would raise confidence.
 | [`github/awesome-copilot` `acreadiness-assess`](https://github.com/github/awesome-copilot/blob/main/docs/README.skills.md) | Runs AgentRC readiness assessment and produces an AI-readiness dashboard for a repository | Audits software/project readiness rather than AI-agent readiness: docs-vs-code, reproducibility, runtime proof, deployment, contracts, security, reliability, and truthful readiness claims |
 | [`microsoft/agentrc`](https://github.com/microsoft/agentrc) | Reads a codebase, scores AI-readiness, generates agent instruction files, evals, and development configuration, and can monitor drift in CI | Treats AI-readiness as adjacent evidence, but produces a project audit report about actual product state, implementation gaps, operational risk, and evidence-backed readiness stage |
 | [`oimiragieo/agent-studio`](https://github.com/oimiragieo/agent-studio) | Provides a large agent/skill framework with orchestration, plugin marketplace, headless execution, model routing, code review pipeline, and readiness scoring | Keeps the package small and methodology-specific: one installable audit skill with focused references, explicit stop rules, and no broad runtime or marketplace layer |
+
+## Credits And Attribution
+
+The mandatory bug discovery and reproduction-gate workflow is adapted from [`Kappaemme-git/codex-bug-reproducer`](https://github.com/Kappaemme-git/codex-bug-reproducer), an MIT-licensed consent-first Codex skill for finding bug candidates, proving them with focused tests, and proving fixes with red-to-green evidence.
+
+This project integrates that workflow into a broader readiness-audit methodology: bug discovery runs in every audit, while reproduction tests and production fixes remain approval-gated so audited repositories are not mutated without explicit consent.
 
 ## Evidence Model
 
@@ -227,7 +271,7 @@ cp -R project-readiness-auditor ~/.codex/skills/project-readiness-auditor
 Restart Codex, then use:
 
 ```text
-Use $project-readiness-auditor to audit this repository in docs-vs-code mode. Compare README claims with code, tests, configuration, and deployment evidence. Produce findings, readiness stage, validation level, missing evidence, residual risk, and a prioritized closure plan.
+Use $project-readiness-auditor to audit each supplied project separately. For every target project, produce a report pack with code-only-project-readiness, project-readiness, and mandatory bug-audit reports under reports/customer/<project-slug>/. Use README/specs only as intent, cite code/tests/config/deployment evidence, record commands run, ranked bug candidates or NO_BUG_PROVEN, missing evidence, residual risk, and a prioritized closure plan.
 ```
 
 ## Expected Report
@@ -235,9 +279,12 @@ Use $project-readiness-auditor to audit this repository in docs-vs-code mode. Co
 A useful audit report should include:
 
 - audit mode;
+- report type;
+- target project;
 - files inspected;
 - commands run and outcomes;
 - project map;
+- mandatory bug discovery result;
 - readiness stage;
 - validation level achieved;
 - findings ordered by severity;

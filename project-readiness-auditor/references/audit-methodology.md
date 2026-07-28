@@ -28,6 +28,86 @@ Use timeboxes to choose depth:
 - `security`: focus on auth, secrets, permissions, debug endpoints, webhooks, and external calls.
 - `production-readiness`: focus on reproducibility, deployment, observability, migrations, rollback, and operational risk.
 
+When more than one project is supplied, split the work before auditing:
+
+- one target project at a time;
+- one evidence log per target project;
+- one report pack per target project;
+- no shared findings table across unrelated repositories.
+
+Cross-project summaries are allowed only as an index after all per-project reports exist. A cross-project summary is not a substitute for per-project evidence.
+
+## 1a. Choose The Report Pack
+
+Use separate report types for separate questions. Mandatory Bug Discovery is part of every audit, even when the requested report is not a standalone `bug-audit`. If the user asks for a full customer-style audit, produce the relevant report types below for each project and always include `bug-audit`.
+
+### `code-only-project-readiness`
+
+Purpose: answer what the project is, how complete it is, and where it breaks if documentation is ignored.
+
+Evidence allowed:
+
+- source code;
+- tests and fixtures;
+- executable config;
+- package manifests and lock files;
+- CI/deployment/monitoring files;
+- inspected command output if runtime checks are allowed.
+
+Documentation, specs, diagrams, roadmaps, and changelogs may be listed as excluded context, but must not be used as proof in this report.
+
+Must include:
+
+- short verdict;
+- what is actually implemented in code;
+- factual project structure;
+- strengths visible in code;
+- major gaps and unfinished implementation;
+- readiness stage by code evidence only;
+- next validation steps.
+
+### `project-readiness`
+
+Purpose: answer readiness against the project's stated goals.
+
+Evidence allowed:
+
+- README/specs/docs as intent;
+- implementation evidence from code, tests, config, deployment files, migrations, scripts, and inspected runtime output.
+
+Must include:
+
+- stated or inferred project goals;
+- maturity by component or capability;
+- docs-vs-code mismatches;
+- production-readiness risks;
+- recommended work order;
+- explicit claims not verified.
+
+### `bug-audit`
+
+Purpose: identify concrete likely bugs and the smallest test-first plan to prove or reject them. This report type is the full output form for the mandatory bug discovery phase.
+
+Evidence allowed:
+
+- code-level contradictions;
+- route/service/schema mismatches;
+- model/migration mismatches;
+- producer/consumer mismatches;
+- command output when allowed.
+
+Must include:
+
+- ranked bug candidates;
+- evidence from file paths and symbols;
+- trigger or reproduction condition;
+- confidence;
+- proposed regression test;
+- current reproduction status: `NOT_REPRODUCED`, `REPRODUCED`, `NO_BUG_PROVEN`, `INCONCLUSIVE`, or `REJECTED`;
+- explicit note that project files were not modified unless the user approved exact reproduction files and commands.
+
+Do not fix production code in `bug-audit` mode unless the user separately asks for fixes and approves the exact production files and transformation after a bug is reproduced.
+
 ## 2. Build A Project Map
 
 Identify:
@@ -45,7 +125,83 @@ Identify:
 
 If documentation is missing or untrusted, infer factual goals from service names, API routes, UI screens, DTOs, database models, queues, deployment topology, tests, and fixtures.
 
-## 3. Check Reproducibility
+## 3. Mandatory Bug Discovery
+
+Run this phase in every audit. It is not optional and should happen immediately after the initial project map gives enough context to trace real paths.
+
+### 3a. Discover Candidates Read-Only
+
+Before explicit approval for a reproducer, do not create or edit target-project files, install dependencies, run formatters or migrations, modify configuration, generate target-project reports, or run commands likely to mutate project state. Read source, configuration, documentation, existing tests, user-supplied logs, and Git history when available. Existing targeted tests may be run only when clearly safe and non-mutating.
+
+Look for falsifiable correctness defects:
+
+- off-by-one boundaries;
+- inverted conditions;
+- missing empty, null, or absent-field handling;
+- unsafe state transitions;
+- ordering or deduplication errors;
+- stale cache keys;
+- permission checks after side effects;
+- precision, locale, or timezone mistakes;
+- async races and shared mutable state;
+- inconsistent validation;
+- error paths that violate a surrounding contract.
+
+For every candidate, record:
+
+- reachable path;
+- contract evidence for expected behavior;
+- triggering input or state;
+- expected result;
+- likely actual result;
+- source location;
+- impact;
+- confidence.
+
+Reject vague suspicions. A candidate must have a reachable path, defensible expected behavior, and a specific trigger.
+
+### 3b. Rank Candidates
+
+Rank by:
+
+1. contract strength from tests, types, schemas, docs-as-intent, callers, or consistent nearby behavior;
+2. reachability by real callers or valid input;
+3. reproducibility with a small deterministic test or harness;
+4. impact on outputs, data, permissions, crashes, or user-visible workflows.
+
+Show at most five candidates. If no candidate survives, report `NO_BUG_PROVEN` for the inspected scope and name the next useful evidence instead of inventing a bug.
+
+### 3c. Reproduction Approval Gate
+
+Before creating or editing reproduction tests or harnesses, stop and present:
+
+- candidate or candidates to test;
+- why each could be a real bug;
+- exact files to create or edit;
+- minimal fixture or input;
+- exact test or harness command;
+- signal that will confirm each bug;
+- main risk or uncertainty;
+- statement that no project files have been modified.
+
+Approval covers only the displayed reproduction files and commands.
+
+### 3d. Fix Approval Gate
+
+After a candidate is genuinely reproduced and root cause is isolated, stop again before changing production code. Present:
+
+- reproduction status: `REPRODUCED`;
+- proven bug;
+- root cause;
+- exact production files to change;
+- proposed transformation;
+- behavior that must remain identical;
+- regression and broader test plan;
+- main risk.
+
+Approval covers only the displayed production files and transformation. After an approved fix, prove red-to-green by rerunning the same targeted reproducer and the broadest relevant checks.
+
+## 4. Check Reproducibility
 
 Look for:
 
@@ -59,7 +215,7 @@ Look for:
 - database and migration setup;
 - seed data or fixtures.
 
-## 4. Check Cross-Part Contracts
+## 5. Check Cross-Part Contracts
 
 Compare:
 
@@ -73,7 +229,7 @@ Compare:
 
 Also check required/optional fields, status codes, error shapes, serialization formats, retry semantics, and idempotency expectations.
 
-## 5. Search For Incompleteness
+## 6. Search For Incompleteness
 
 Search for:
 
@@ -84,7 +240,7 @@ Search for:
 - schemas with fields that are not persisted or returned;
 - tests that assert implementation details but not user-visible behavior.
 
-## 6. Review Reliability
+## 7. Review Reliability
 
 Check:
 
@@ -99,7 +255,7 @@ Check:
 - blocking I/O inside async code;
 - resource cleanup and shutdown behavior.
 
-## 7. Review Security
+## 8. Review Security
 
 Check:
 
@@ -111,7 +267,7 @@ Check:
 - webhook validation;
 - external API calls and data exposure.
 
-## 8. Classify Readiness
+## 9. Classify Readiness
 
 Classify the project as one of:
 
@@ -125,7 +281,7 @@ Classify the project as one of:
 
 Use the readiness rubric. Do not claim Production-ready without reproducible setup, deployment, migrations, security, observability, rollback, and critical test evidence.
 
-## 9. Build The Closure Plan
+## 10. Build The Closure Plan
 
 Prioritize remediation by risk and unblock value:
 
@@ -136,6 +292,16 @@ Prioritize remediation by risk and unblock value:
 
 Each action should include the smallest next proof that would raise confidence.
 
-## 10. Report
+## 11. Report
 
 Report findings by severity, cite evidence, state the readiness stage, state validation level L0-L5, include missing evidence and residual risk, and name the smallest next check that would improve confidence.
+
+For multi-project work, write report files using a stable per-project layout when writing to disk:
+
+```text
+reports/customer/<project-slug>/code-only-project-readiness-YYYY-MM-DD.md
+reports/customer/<project-slug>/project-readiness-YYYY-MM-DD.md
+reports/customer/<project-slug>/bug-audit-YYYY-MM-DD.md
+```
+
+Create the report types that match the user's request, but never omit Mandatory Bug Discovery from the audit evidence. For full customer-style audits, include the standalone `bug-audit` report. If the user points to examples with all three styles and asks for the skill to support them, update the skill templates and validation rules rather than generating customer audit reports for this repository.

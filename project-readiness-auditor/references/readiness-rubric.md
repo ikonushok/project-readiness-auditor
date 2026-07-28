@@ -32,6 +32,17 @@
 - Missing evidence: a claim may be true, but inspected files or commands do not prove it.
 - Documentation mismatch: docs claim behavior that inspected implementation does not support.
 
+## Bug Discovery Status
+
+- `REPRODUCED`: a focused approved case fails deterministically for the predicted reason.
+- `NOT_REPRODUCED`: the approved case does not produce the predicted failure.
+- `NO_BUG_PROVEN`: mandatory read-only discovery found no defensible candidate in the inspected scope, or approved tests did not prove a correctness defect.
+- `INCONCLUSIVE`: environment, nondeterminism, missing access, or ambiguous signals prevent a conclusion.
+- `REJECTED`: the candidate failed the reachability, contract, reproducibility, or impact filter.
+- `FIX_PROVEN`: the same reproducer goes red to green and relevant broader checks pass after an approved fix.
+
+Bug candidates are mandatory audit output, but reproduction tests and production fixes require separate explicit approval gates.
+
 ## Verdicts
 
 - `PASS`: checks passed with sufficient evidence.
