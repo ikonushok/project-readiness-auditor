@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.3 - 2026-07-29
+
 - Removed the hardcoded customer report date from public report-pack validation.
 - Added static methodology regression checks for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
 - Added strict report-quality diagnostics for vague command logs, missing validation basis, invalid bug-audit semantics, and unsupported evidence-strength labels.
