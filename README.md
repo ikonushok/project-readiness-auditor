@@ -205,14 +205,15 @@ reports/customer/<project-slug>/bug-audit-YYYY-MM-DD.md
 
 A cross-project index may link to the per-project reports, but it must not replace them.
 
-## Public Example
+## Public Examples
 
-See the public customer example report pack for [`ikonushok/recommender-systems-from-zero`](reports/customer/recommender-systems-from-zero/):
+Public customer example report packs:
 
-- [`index.md`](reports/customer/recommender-systems-from-zero/index.md)
-- [`code-only-project-readiness-2026-07-28.md`](reports/customer/recommender-systems-from-zero/code-only-project-readiness-2026-07-28.md)
-- [`project-readiness-2026-07-28.md`](reports/customer/recommender-systems-from-zero/project-readiness-2026-07-28.md)
-- [`bug-audit-2026-07-28.md`](reports/customer/recommender-systems-from-zero/bug-audit-2026-07-28.md)
+| Example | What it demonstrates | Report pack |
+|---|---|---|
+| `recommender-systems-from-zero` | L2 educational ML/codebase audit with tests, imports, AST checks, and notebook metadata evidence. | [`reports/customer/recommender-systems-from-zero/`](reports/customer/recommender-systems-from-zero/) |
+| `hiking-route-recommender-demo` | Current strict report format for a docs-vs-code static rerun with explicit validation basis and corrected bug-audit semantics. | [`reports/customer/hiking-route-recommender-demo/`](reports/customer/hiking-route-recommender-demo/) |
+| `mt5-research` | Path-redacted high-risk automation/trading research audit for a private MT5 research system. | [`reports/customer/mt5-research/`](reports/customer/mt5-research/) |
 
 Private validation runs and non-public target reports belong under `reports/validation/` and are ignored by Git. Public examples belong under `reports/customer/`.
 
@@ -352,6 +353,12 @@ Run strict report-quality diagnostics when hardening generated customer reports:
 python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality
 ```
 
+Add grouped failure-mode output when calibrating the validator against real reports:
+
+```bash
+python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --report-quality-summary
+```
+
 To check one customer report pack while older packs are still being cleaned up:
 
 ```bash
@@ -359,14 +366,14 @@ python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-au
 ```
 
 CI runs the normal scaffold validator, unit tests, and `git diff --check`. The validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
-The strict report-quality mode is a local hardening gate for real report failure modes: vague command logs, missing validation basis, `NO_BUG_PROVEN` inside bug candidate tables, unsupported evidence-strength labels, missing-evidence rows in immediate bug-fix batches, and unsafe previous-report comparisons without an after-freeze note plus Better/Worse/Unchanged/Evidence columns.
+The strict report-quality mode is a local hardening gate for real report failure modes: vague command logs, missing validation basis, `NO_BUG_PROVEN` inside bug candidate tables, unsupported evidence-strength labels, missing-evidence rows in immediate bug-fix batches, and unsafe previous-report comparisons without an after-freeze note plus Better/Worse/Unchanged/Evidence columns. The optional summary groups repeated report defects by stable failure-mode code and example report path, which makes validator/template improvements traceable to observed auditor mistakes.
 
-Current validation level: L3 with residual risk. The public `recommender-systems-from-zero` customer report pack records one real project audit simulation with code-only, project-readiness, and bug-audit outputs. Private validation artifacts remain local under ignored `reports/validation/`.
+Current validation level: L3 with residual risk. The public customer examples include an L2 educational ML audit, a strict-format static rerun for a recommender demo, and a path-redacted high-risk MT5 research audit. Private validation artifacts remain local under ignored `reports/validation/`.
 
 ## Repository Layout
 
 - [`project-readiness-auditor/`](project-readiness-auditor/): public installable skill package.
-- [`reports/customer/recommender-systems-from-zero/`](reports/customer/recommender-systems-from-zero/): public example report pack.
+- [`reports/customer/`](reports/customer/): public example report packs.
 - [`.github/workflows/validate.yml`](.github/workflows/validate.yml): package validation in CI.
 - [`CHANGELOG.md`](CHANGELOG.md): release notes.
 - [`README.md`](README.md): public project overview and audit methodology.

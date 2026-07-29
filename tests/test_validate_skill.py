@@ -376,6 +376,27 @@ class ValidateSkillTests(unittest.TestCase):
 
             self.assertTrue(any("comparison table missing columns" in error for error in errors))
 
+    def test_quality_summary_groups_repeated_customer_failure_modes(self) -> None:
+        errors = [
+            "customer report quality alpha/index.md has vague command entry: `find target files`",
+            "customer report quality alpha/code-only-project-readiness-2026-08-15.md "
+            "has vague command entry: `sed README/tests`",
+            "customer report quality alpha/bug-audit-2026-08-15.md missing Validation basis",
+            "customer report quality beta/bug-audit-2026-08-15.md puts NO_BUG_PROVEN in Bug Candidates",
+        ]
+
+        summary = validator.summarize_quality_failures(errors)
+
+        self.assertIn("QUALITY SUMMARY:", summary)
+        self.assertTrue(any(line.startswith("- VAGUE_COMMAND_ENTRY: 2") for line in summary))
+        self.assertTrue(any(line.startswith("- MISSING_VALIDATION_BASIS: 1") for line in summary))
+        self.assertTrue(any(line.startswith("- NO_BUG_PROVEN_AS_CANDIDATE: 1") for line in summary))
+
+    def test_quality_summary_reports_no_customer_failures(self) -> None:
+        summary = validator.summarize_quality_failures([])
+
+        self.assertEqual(["QUALITY SUMMARY: no customer report-pack failures"], summary)
+
 
 if __name__ == "__main__":
     unittest.main()

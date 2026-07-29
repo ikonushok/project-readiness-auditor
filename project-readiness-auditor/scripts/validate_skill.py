@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import re
 import sys
+from collections import Counter, defaultdict
 from pathlib import Path
 
 
@@ -192,6 +193,35 @@ COMPARISON_REQUIRED_COLUMNS = {
     "evidence",
     "interpretation",
 }
+QUALITY_FAILURE_MODE_DESCRIPTIONS = {
+    "PACK_STRUCTURE": "Report pack is missing a required report file or required section.",
+    "MISSING_VALIDATION_BASIS": "Report does not say what evidence level and inspection basis support its claims.",
+    "VAGUE_COMMAND_ENTRY": "Commands Run contains shorthand instead of exact shell commands.",
+    "NO_BUG_PROVEN_AS_CANDIDATE": "Bug audit lists NO_BUG_PROVEN as if it were a bug candidate.",
+    "MISSING_EVIDENCE_AS_BUG_CANDIDATE": "Bug audit treats missing evidence as a bug candidate.",
+    "UNSUPPORTED_EVIDENCE_STRENGTH": "Bug candidate uses an evidence-strength label outside the approved rubric.",
+    "NON_BUG_IN_FIX_BATCH": "Immediate Bug-Fix Batch mixes evidence status or no-bug status into bug-fix work.",
+    "COMPARISON_AFTER_FREEZE_NOTE": "Previous-report comparison does not state that old reports were opened after freeze.",
+    "COMPARISON_CURRENT_FREEZE_ARTIFACT": "Previous-report comparison does not name the frozen current audit artifact.",
+    "COMPARISON_PREVIOUS_ARTIFACT": "Previous-report comparison does not name the previous report artifact.",
+    "COMPARISON_TABLE_MISSING": "Previous-report comparison section has no comparison table.",
+    "COMPARISON_DELTA_COLUMNS": "Previous-report comparison table lacks Better/Worse/Unchanged/Evidence columns.",
+    "UNCLASSIFIED": "Validator emitted an error that is not yet mapped to a product failure mode.",
+}
+QUALITY_FAILURE_MODE_PATTERNS = [
+    ("PACK_STRUCTURE", re.compile(r"^customer report pack ")),
+    ("MISSING_VALIDATION_BASIS", re.compile(r" missing Validation basis$")),
+    ("VAGUE_COMMAND_ENTRY", re.compile(r" has vague command entry: ")),
+    ("NO_BUG_PROVEN_AS_CANDIDATE", re.compile(r" puts NO_BUG_PROVEN in Bug Candidates$")),
+    ("MISSING_EVIDENCE_AS_BUG_CANDIDATE", re.compile(r" treats missing evidence as bug candidate$")),
+    ("UNSUPPORTED_EVIDENCE_STRENGTH", re.compile(r" has unsupported evidence strength: ")),
+    ("NON_BUG_IN_FIX_BATCH", re.compile(r" mixes non-bug evidence status into Immediate Bug-Fix Batch$")),
+    ("COMPARISON_AFTER_FREEZE_NOTE", re.compile(r" comparison missing after-freeze note$")),
+    ("COMPARISON_CURRENT_FREEZE_ARTIFACT", re.compile(r" comparison missing current freeze artifact$")),
+    ("COMPARISON_PREVIOUS_ARTIFACT", re.compile(r" comparison missing previous report artifact$")),
+    ("COMPARISON_TABLE_MISSING", re.compile(r" comparison missing table$")),
+    ("COMPARISON_DELTA_COLUMNS", re.compile(r" comparison table missing columns: ")),
+]
 CUSTOMER_REPORT_REQUIREMENTS = [
     (
         "index",
@@ -530,6 +560,50 @@ def validate_comparison_quality(text: str, display_path: str) -> list[str]:
     return errors
 
 
+def classify_quality_failure(error: str) -> str:
+    for code, pattern in QUALITY_FAILURE_MODE_PATTERNS:
+        if pattern.search(error):
+            return code
+    return "UNCLASSIFIED"
+
+
+def error_subject(error: str) -> str:
+    quality_match = re.search(r"customer report quality ([^ ]+)", error)
+    if quality_match:
+        return quality_match.group(1)
+    pack_match = re.search(r"customer report pack ([^ ]+)", error)
+    if pack_match:
+        return pack_match.group(1)
+    return error
+
+
+def summarize_quality_failures(errors: list[str]) -> list[str]:
+    relevant_errors = [
+        error
+        for error in errors
+        if error.startswith("customer report quality ") or error.startswith("customer report pack ")
+    ]
+    if not relevant_errors:
+        return ["QUALITY SUMMARY: no customer report-pack failures"]
+
+    counts: Counter[str] = Counter()
+    examples: defaultdict[str, list[str]] = defaultdict(list)
+    for error in relevant_errors:
+        code = classify_quality_failure(error)
+        counts[code] += 1
+        subject = error_subject(error)
+        if subject not in examples[code]:
+            examples[code].append(subject)
+
+    lines = ["QUALITY SUMMARY:"]
+    for code, count in counts.most_common():
+        example_text = ", ".join(examples[code][:3])
+        description = QUALITY_FAILURE_MODE_DESCRIPTIONS[code]
+        lines.append(f"- {code}: {count} - {description} Examples: {example_text}")
+
+    return lines
+
+
 def validate_customer_report_pack(
     repo_root: Path, strict_quality: bool = False, report_pack: str | None = None
 ) -> list[str]:
@@ -581,6 +655,11 @@ def main() -> int:
         "--customer-report-pack",
         help="Limit reports/customer validation to one project slug.",
     )
+    parser.add_argument(
+        "--report-quality-summary",
+        action="store_true",
+        help="Print grouped customer report-pack failure modes after validation.",
+    )
     args = parser.parse_args()
 
     root = Path(args.skill_path).expanduser().resolve()
@@ -612,9 +691,15 @@ def main() -> int:
     if errors:
         for error in errors:
             print(f"ERROR: {error}")
+        if args.report_quality_summary:
+            for line in summarize_quality_failures(errors):
+                print(line)
         print("RESULT: FAIL L0")
         return 1
 
+    if args.report_quality_summary:
+        for line in summarize_quality_failures(errors):
+            print(line)
     print("RESULT: PASS L0")
     return 0
 

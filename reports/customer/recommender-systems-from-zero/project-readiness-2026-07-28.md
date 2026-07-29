@@ -10,6 +10,7 @@ Audited commit: `6ad30d7c76bebab1fa28fbce35ddf7102792f04e`
 - Readiness stage: MVP / beta-quality educational repository
 - Practical readiness estimate: 80-88% for public educational use
 - Validation level / evidence level: L2 docs-vs-code/config/test audit
+- Validation basis: README/docs were treated as intent and checked against source, tests, config, existing unit test output, import/AST checks, and notebook metadata; no full clean Python 3.12 notebook run-all was performed.
 - Audit mode: `docs-vs-code`
 - Report type: `project-readiness`
 - Scope: README goals, docs/notebooks/code/tests/config, existing safe runtime checks

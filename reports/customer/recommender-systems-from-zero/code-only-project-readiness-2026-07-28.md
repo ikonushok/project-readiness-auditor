@@ -10,6 +10,7 @@ Audited commit: `6ad30d7c76bebab1fa28fbce35ddf7102792f04e`
 - Readiness stage: MVP educational codebase
 - Practical readiness estimate: 78-85% for code-backed educational use
 - Validation level / evidence level: L2 static/code/config review plus existing unit tests and import/AST checks
+- Validation basis: static code/config/test inspection plus existing unit test execution, module import checks, AST parsing, and notebook metadata inspection; no full clean Python 3.12 notebook run-all was performed.
 - Audit mode: `code-only`
 - Report type: `code-only-project-readiness`
 - Scope: source modules, tests, config, notebook metadata, data helper layout
