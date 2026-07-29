@@ -12,7 +12,8 @@
 - Added public customer example positioning for `recommender-systems-from-zero`, `hiking-route-recommender-demo`, and a path-redacted `mt5-research` report pack.
 - Added an official public example allowlist and CI strict validation gate with `--public-report-examples`.
 - Added public example documentation and moved legacy generated customer packs out of the public examples surface.
-- Raised the documented validation level to L4 with residual risk based on repeated audits across materially different project types.
+- Recorded L4 public-example evidence based on repeated audits across materially different project types.
+- Added tracked release-readiness evidence for L5 candidate status under `reports/release/`.
 - Added unit tests for the validator and wired them into CI.
 
 ## 0.1.2

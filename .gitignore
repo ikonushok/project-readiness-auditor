@@ -18,6 +18,9 @@ __pycache__/
 /reports/*
 !/reports/customer/
 !/reports/customer/**
+!/reports/release/
+!/reports/release/**
+reports/release/*_rus.md
 reports/customer/.DS_Store
 reports/customer/**/.DS_Store
 /reports/rus/
