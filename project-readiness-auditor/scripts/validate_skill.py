@@ -128,6 +128,13 @@ FORBIDDEN_PACKAGE_PATHS = [
     "CLAUDE.md",
     ".claude",
 ]
+FORBIDDEN_GENERATED_NAMES = {
+    ".DS_Store",
+    "__pycache__",
+}
+FORBIDDEN_GENERATED_SUFFIXES = {
+    ".pyc",
+}
 
 NAME_RE = re.compile(r"^name:\s*project-readiness-auditor\s*$", re.MULTILINE)
 DESCRIPTION_RE = re.compile(r"^description:\s*.+", re.MULTILINE)
@@ -368,6 +375,10 @@ def validate(root: Path) -> list[str]:
     for relative in FORBIDDEN_PACKAGE_PATHS:
         if (root / relative).exists():
             errors.append(f"local workspace file must not be inside skill package: {relative}")
+
+    for path in root.rglob("*"):
+        if path.name in FORBIDDEN_GENERATED_NAMES or path.suffix in FORBIDDEN_GENERATED_SUFFIXES:
+            errors.append(f"generated file must not be inside skill package: {path.relative_to(root)}")
 
     skill_path = root / "SKILL.md"
     if skill_path.is_file():

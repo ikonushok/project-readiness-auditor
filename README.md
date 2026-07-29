@@ -360,7 +360,7 @@ RESULT: PASS L0
 Run the validator regression tests:
 
 ```bash
-python3 -m unittest discover -s tests
+PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests
 ```
 
 Run strict report-quality diagnostics when hardening generated customer reports:

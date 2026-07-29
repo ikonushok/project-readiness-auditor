@@ -1,9 +1,12 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 import tempfile
 import unittest
 from pathlib import Path
+
+sys.dont_write_bytecode = True
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -138,6 +141,16 @@ class ValidateSkillTests(unittest.TestCase):
         errors.extend(validator.validate_methodology_regressions(skill_root))
 
         self.assertEqual([], errors)
+
+    def test_skill_package_rejects_generated_files(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            skill_root = Path(tmpdir) / "project-readiness-auditor"
+            write_file(skill_root / "SKILL.md", "---\nname: project-readiness-auditor\n---\n")
+            write_file(skill_root / "scripts/__pycache__/validate_skill.cpython-311.pyc", "")
+
+            errors = validator.validate(skill_root)
+
+            self.assertTrue(any("__pycache__" in error for error in errors))
 
     def test_customer_report_pack_accepts_any_iso_date(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
