@@ -59,6 +59,20 @@ If the user asks to compare a new audit with previous reports:
 6. Report whether differences are caused by new evidence, changed target code, different validation depth, stronger/weaker claims, or earlier report errors.
 7. Do not retroactively rewrite the current audit findings from previous-report content unless the user explicitly asks for a revised audit and the revision cites primary evidence.
 
+When writing the comparison, classify deltas explicitly:
+
+- `Better`: primary evidence shows a real implementation, validation, operational, or product-readiness improvement.
+- `Worse`: primary evidence shows a new risk, a clearer impact of an old risk, a regression, or a weaker claim than before.
+- `Unchanged`: the same target commit, same unclosed defect, same missing evidence, or same validation level remains.
+
+Use separate comparison rows for:
+
+- same target commit with no real product progress;
+- roadmap documentation vs implemented code;
+- security risk became clearer but not fixed;
+- test surface grew but validation level did not increase;
+- old report mistake or overclaim corrected by the new audit.
+
 ### `code-only-project-readiness`
 
 Purpose: answer what the project is, how complete it is, and where it breaks if documentation is ignored.

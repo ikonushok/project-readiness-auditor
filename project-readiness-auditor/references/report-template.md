@@ -14,8 +14,11 @@ Use these shapes for per-project audit reports. When multiple projects are suppl
 - Put multi-project customer outputs under `reports/customer/<project-slug>/`.
 - A cross-project index may link to per-project reports, but must not replace them.
 - Every report must name its audit mode, report type, files inspected, commands run, evidence level, findings, missing evidence, residual risk, and next smallest validation step.
+- Every report must put `Validation basis:` next to `Validation level / evidence level:` and name the concrete slice or command evidence behind the level.
+- `Commands run` must contain exact command strings or explicitly say `None`. Human-readable descriptions belong in `Inspection notes`, not in the command log.
 - Every report summary must name the target project.
-- Every audit report must include Mandatory Bug Discovery. If no defensible bug candidate is found, report `NO_BUG_PROVEN` for the inspected scope instead of omitting the section.
+- Every audit report must include Mandatory Bug Discovery. If no defensible bug candidate is found, report `NO_BUG_PROVEN` for the inspected scope in a dedicated status line or section instead of omitting the section.
+- Do not put `NO_BUG_PROVEN` or `missing evidence` rows inside bug candidate tables or immediate bug-fix batches. Bug tables are for concrete defect candidates only.
 - Full project audits should include a short `index.md` decision brief when report files are written to disk. The index should name the overall verdict, practical readiness stage, top risks, report links, and recommended work order.
 - Do not over-compress real project audits. Keep reports concise, but include enough narrative, product/context explanation, and evidence for a team to make a decision.
 
@@ -32,6 +35,7 @@ Use this shape when writing a multi-report pack.
 - Main decision:
 - Main reason:
 - Evidence level:
+- Validation basis:
 
 ### Three Main Risks
 
@@ -57,18 +61,25 @@ Use this shape when writing a multi-report pack.
 
 Use only after the current audit report pack has been completed from primary evidence. Previous reports are comparison artifacts, not audit evidence.
 
-| Criterion | Current audit | Previous report A | Previous report B | Interpretation |
-|---|---|---|---|---|
-| Verdict |  |  |  |  |
-| Readiness stage |  |  |  |  |
-| Validation level |  |  |  |  |
-| Top blockers |  |  |  |  |
-| Bug candidates |  |  |  |  |
-| Runtime evidence |  |  |  |  |
-| Missing evidence |  |  |  |  |
-| New findings |  |  |  |  |
-| Weaker or unsupported claims |  |  |  |  |
-| Recommended next step |  |  |  |  |
+- Old reports opened only after current audit freeze:
+- Current audit freeze artifact:
+- Previous report artifact(s):
+- Same target commit:
+- Comparison basis:
+
+| Area | Current audit | Previous report | Better | Worse | Unchanged | Evidence | Interpretation |
+|---|---|---|---|---|---|---|---|
+| Verdict |  |  |  |  |  |  |  |
+| Readiness stage |  |  |  |  |  |  |  |
+| Validation level |  |  |  |  |  |  |  |
+| Top blockers |  |  |  |  |  |  |  |
+| Bug candidates |  |  |  |  |  |  |  |
+| Runtime evidence |  |  |  |  |  |  |  |
+| Security posture |  |  |  |  |  |  |  |
+| Test surface |  |  |  |  |  |  |  |
+| Roadmap docs vs implemented code |  |  |  |  |  |  |  |
+| Same target commit / no real product progress |  |  |  |  |  |  |  |
+| Recommended next step |  |  |  |  |  |  |  |
 
 When writing the interpretation, distinguish:
 
@@ -77,6 +88,9 @@ When writing the interpretation, distinguish:
 - different validation depth;
 - stronger or weaker claim wording;
 - likely mistakes in older reports.
+- security risk became clearer but not fixed;
+- test surface grew but validation level did not increase;
+- roadmap documentation vs implemented code.
 
 ## Code-Only Project Readiness
 
@@ -88,6 +102,7 @@ Use this shape when documentation must not be used as proof.
 - Readiness stage:
 - Practical readiness estimate:
 - Validation level / evidence level:
+- Validation basis:
 - Audit mode: `code-only`
 - Report type: `code-only-project-readiness`
 - Target project:
@@ -145,10 +160,11 @@ Use implementation evidence only. Reconstruct what jobs the project actually tri
 - Strongest candidate:
 - Reproduction status:
 - Proposed test-first next step:
+- If no concrete candidate survives, set `Status: NO_BUG_PROVEN` here and leave the candidate table empty or replace it with `No concrete candidate survived ranking`.
 
-| # | Candidate | Contract evidence | Trigger | Location | Confidence |
-|---|---|---|---|---|---|
-| 1 |  |  |  |  |  |
+| # | Candidate | Evidence strength | Contract evidence | Trigger | Location | Confidence | Reproduction status |
+|---|---|---|---|---|---|---|---|
+| 1 |  |  |  |  |  |  | `NOT_REPRODUCED` |
 
 ### Contract Reliability Security Checks
 
@@ -183,6 +199,7 @@ Use one of these evidence-strength labels for each finding: `reproduced`, `direc
 
 - Files inspected:
 - Commands run:
+- Inspection notes:
 - Command outcomes:
 - Claims not verified:
 - Residual risk:
@@ -197,6 +214,7 @@ Use this shape when docs/specs/goals are intent and code/config/tests are proof.
 - Readiness stage:
 - Practical readiness estimate:
 - Validation level / evidence level:
+- Validation basis:
 - Audit mode:
 - Report type: `project-readiness`
 - Target project:
@@ -252,10 +270,11 @@ Use for product/customer audits. Name phases, contours, operational readiness, a
 - Strongest candidate:
 - Reproduction status:
 - Proposed test-first next step:
+- If no concrete candidate survives, set `Status: NO_BUG_PROVEN` here and leave the candidate table empty or replace it with `No concrete candidate survived ranking`.
 
-| # | Candidate | Contract evidence | Trigger | Location | Confidence |
-|---|---|---|---|---|---|
-| 1 |  |  |  |  |  |
+| # | Candidate | Evidence strength | Contract evidence | Trigger | Location | Confidence | Reproduction status |
+|---|---|---|---|---|---|---|---|
+| 1 |  |  |  |  |  |  | `NOT_REPRODUCED` |
 
 ### Readiness By Capability
 
@@ -312,6 +331,7 @@ Use for product/customer audits. Name phases, contours, operational readiness, a
 
 - Files inspected:
 - Commands run:
+- Inspection notes:
 - Command outcomes:
 - Claims not verified:
 - Residual risk:
@@ -324,6 +344,7 @@ Use this shape for the mandatory bug discovery phase and when the user asks for 
 
 - Verdict:
 - Validation level / evidence level:
+- Validation basis:
 - Audit mode:
 - Report type: `bug-audit`
 - Target project:
@@ -336,7 +357,7 @@ Use this shape for the mandatory bug discovery phase and when the user asks for 
 |---|---|---|---|---|---|---|---|
 | 1 |  |  |  |  |  |  | `NOT_REPRODUCED` |
 
-If no candidate survives ranking, set status to `NO_BUG_PROVEN` and describe the inspected scope plus next useful evidence.
+Bug candidate rows must contain concrete defect candidates only. Do not use `NO_BUG_PROVEN` or `missing evidence` as a candidate. If no candidate survives ranking, set status to `NO_BUG_PROVEN` outside the table and describe the inspected scope plus next useful evidence.
 
 ### Immediate Bug-Fix Batch
 
@@ -410,6 +431,7 @@ Use only after a candidate is reproduced.
 
 - Files inspected:
 - Commands run:
+- Inspection notes:
 - Command outcomes:
 - Candidates not reproduced:
 - Residual risk:

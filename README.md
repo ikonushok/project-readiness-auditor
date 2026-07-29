@@ -226,7 +226,10 @@ Private validation runs and non-public target reports belong under `reports/vali
 | [`github/awesome-copilot` `acquire-codebase-knowledge`](https://github.com/github/awesome-copilot/blob/main/docs/README.skills.md) | Maps, documents, and helps users onboard into an existing codebase | Uses codebase mapping as one audit step, then goes further into readiness verdicts, production evidence, contract risks, severity, residual risk, and next validation steps |
 | [`github/awesome-copilot` `acreadiness-assess`](https://github.com/github/awesome-copilot/blob/main/docs/README.skills.md) | Runs AgentRC readiness assessment and produces an AI-readiness dashboard for a repository | Audits software/project readiness rather than AI-agent readiness: docs-vs-code, reproducibility, runtime proof, deployment, contracts, security, reliability, and truthful readiness claims |
 | [`microsoft/agentrc`](https://github.com/microsoft/agentrc) | Reads a codebase, scores AI-readiness, generates agent instruction files, evals, and development configuration, and can monitor drift in CI | Treats AI-readiness as adjacent evidence, but produces a project audit report about actual product state, implementation gaps, operational risk, and evidence-backed readiness stage |
+| [`NousResearch/hermes-agent`](https://github.com/NousResearch/hermes-agent) | Provides a broad self-improving agent runtime with persistent memory, messaging gateways, skills, web/tool access, subagents, scheduling, and sandbox backends | Uses agent runtime capabilities as adjacent infrastructure, but focuses narrowly on evidence-based third-party project readiness audits, mandatory bug discovery, validation levels, approval-gated reproduction, and decision-ready Markdown report packs |
 | [`oimiragieo/agent-studio`](https://github.com/oimiragieo/agent-studio) | Provides a large agent/skill framework with orchestration, plugin marketplace, headless execution, model routing, code review pipeline, and readiness scoring | Keeps the package small and methodology-specific: one installable audit skill with focused references, explicit stop rules, and no broad runtime or marketplace layer |
+
+Hermes Agent is stronger as a runtime/platform, but it does not cover this project's niche of strict project-readiness due diligence.
 
 ## Credits And Attribution
 
@@ -336,6 +339,27 @@ Expected result:
 ```text
 RESULT: PASS L0
 ```
+
+Run the validator regression tests:
+
+```bash
+python3 -m unittest discover -s tests
+```
+
+Run strict report-quality diagnostics when hardening generated customer reports:
+
+```bash
+python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality
+```
+
+To check one customer report pack while older packs are still being cleaned up:
+
+```bash
+python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --customer-report-pack hiking-route-recommender-demo
+```
+
+CI runs the normal scaffold validator, unit tests, and `git diff --check`. The validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
+The strict report-quality mode is a local hardening gate for real report failure modes: vague command logs, missing validation basis, `NO_BUG_PROVEN` inside bug candidate tables, unsupported evidence-strength labels, missing-evidence rows in immediate bug-fix batches, and unsafe previous-report comparisons without an after-freeze note plus Better/Worse/Unchanged/Evidence columns.
 
 Current validation level: L3 with residual risk. The public `recommender-systems-from-zero` customer report pack records one real project audit simulation with code-only, project-readiness, and bug-audit outputs. Private validation artifacts remain local under ignored `reports/validation/`.
 

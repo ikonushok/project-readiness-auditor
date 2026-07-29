@@ -20,5 +20,8 @@ jobs:
       - name: Validate skill scaffold
         run: python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor
 
+      - name: Run validator tests
+        run: python3 -m unittest discover -s tests
+
       - name: Check whitespace
         run: git diff --check

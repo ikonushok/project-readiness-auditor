@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+- Removed the hardcoded customer report date from public report-pack validation.
+- Added static methodology regression checks for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
+- Added strict report-quality diagnostics for vague command logs, missing validation basis, invalid bug-audit semantics, and unsupported evidence-strength labels.
+- Hardened the report template around validation basis, exact command logs, inspection notes, and `NO_BUG_PROVEN` placement.
+- Added scoped customer report-pack validation with `--customer-report-pack`.
+- Added a structured previous-report comparison workflow with after-freeze notes and Better/Worse/Unchanged/Evidence columns.
+- Added unit tests for the validator and wired them into CI.
+
 ## 0.1.2
 
 - Added an unconditional previous-report isolation rule: older audit reports cannot be examples, evidence, finding sources, or checklists for a new audit.
