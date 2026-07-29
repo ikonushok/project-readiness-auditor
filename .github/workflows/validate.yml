@@ -23,5 +23,8 @@ jobs:
       - name: Run validator tests
         run: python3 -m unittest discover -s tests
 
+      - name: Validate public report examples
+        run: python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --public-report-examples --report-quality-summary
+
       - name: Check whitespace
         run: git diff --check

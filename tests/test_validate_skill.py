@@ -125,6 +125,11 @@ def clean_comparison_section() -> str:
     )
 
 
+def write_clean_public_examples(repo_root: Path) -> None:
+    for report_pack in validator.PUBLIC_CUSTOMER_REPORT_PACKS:
+        write_clean_report_pack(repo_root / "reports/customer" / report_pack)
+
+
 class ValidateSkillTests(unittest.TestCase):
     def test_live_skill_package_passes_static_and_methodology_checks(self) -> None:
         skill_root = REPO_ROOT / "project-readiness-auditor"
@@ -232,6 +237,46 @@ class ValidateSkillTests(unittest.TestCase):
             )
 
             self.assertEqual([], errors)
+
+    def test_public_report_examples_ignore_non_allowlisted_customer_packs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            write_clean_public_examples(repo_root)
+            write_file(repo_root / "reports/customer/legacy-broken/index.md", "Target project:\n")
+
+            errors = validator.validate_customer_report_pack(
+                repo_root,
+                strict_quality=True,
+                public_examples=True,
+            )
+
+            self.assertEqual([], errors)
+
+    def test_public_report_examples_require_every_allowlisted_pack(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            write_clean_report_pack(repo_root / "reports/customer/recommender-systems-from-zero")
+
+            errors = validator.validate_customer_report_pack(repo_root, public_examples=True)
+
+            self.assertTrue(any("hiking-route-recommender-demo" in error for error in errors))
+            self.assertTrue(any("mt5-research" in error for error in errors))
+
+    def test_public_report_examples_conflict_with_scoped_pack(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            repo_root = Path(tmpdir)
+            write_clean_public_examples(repo_root)
+
+            errors = validator.validate_customer_report_pack(
+                repo_root,
+                report_pack="recommender-systems-from-zero",
+                public_examples=True,
+            )
+
+            self.assertEqual(
+                ["--customer-report-pack and --public-report-examples cannot be used together"],
+                errors,
+            )
 
     def test_strict_report_quality_rejects_no_bug_proven_as_candidate(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

@@ -132,6 +132,11 @@ FORBIDDEN_PACKAGE_PATHS = [
 NAME_RE = re.compile(r"^name:\s*project-readiness-auditor\s*$", re.MULTILINE)
 DESCRIPTION_RE = re.compile(r"^description:\s*.+", re.MULTILINE)
 CUSTOMER_REPORTS_DIR = Path("reports/customer")
+PUBLIC_CUSTOMER_REPORT_PACKS = (
+    "recommender-systems-from-zero",
+    "hiking-route-recommender-demo",
+    "mt5-research",
+)
 DATE_RE = r"\d{4}-\d{2}-\d{2}"
 QUALITY_REPORT_TYPES = {
     "code-only-project-readiness",
@@ -605,14 +610,25 @@ def summarize_quality_failures(errors: list[str]) -> list[str]:
 
 
 def validate_customer_report_pack(
-    repo_root: Path, strict_quality: bool = False, report_pack: str | None = None
+    repo_root: Path,
+    strict_quality: bool = False,
+    report_pack: str | None = None,
+    public_examples: bool = False,
 ) -> list[str]:
     errors: list[str] = []
     customer_root = repo_root / CUSTOMER_REPORTS_DIR
     if not customer_root.exists():
         return errors
 
-    if report_pack is not None:
+    if report_pack is not None and public_examples:
+        return ["--customer-report-pack and --public-report-examples cannot be used together"]
+
+    if public_examples:
+        report_dirs = [customer_root / report_pack for report_pack in PUBLIC_CUSTOMER_REPORT_PACKS]
+        missing_packs = [path.name for path in report_dirs if not path.is_dir()]
+        if missing_packs:
+            return [f"public customer report pack missing: {pack}" for pack in missing_packs]
+    elif report_pack is not None:
         report_dirs = [customer_root / report_pack]
         if not report_dirs[0].is_dir():
             return [f"customer report pack not found: {report_pack}"]
@@ -656,6 +672,11 @@ def main() -> int:
         help="Limit reports/customer validation to one project slug.",
     )
     parser.add_argument(
+        "--public-report-examples",
+        action="store_true",
+        help="Validate only the official public customer example report packs.",
+    )
+    parser.add_argument(
         "--report-quality-summary",
         action="store_true",
         help="Print grouped customer report-pack failure modes after validation.",
@@ -677,6 +698,7 @@ def main() -> int:
                 repo_root,
                 strict_quality=args.strict_report_quality,
                 report_pack=args.customer_report_pack,
+                public_examples=args.public_report_examples,
             )
         )
     except UnicodeDecodeError as exc:

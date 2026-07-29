@@ -10,6 +10,9 @@
 - Added a structured previous-report comparison workflow with after-freeze notes and Better/Worse/Unchanged/Evidence columns.
 - Added grouped report-quality failure-mode summaries with `--report-quality-summary` for calibrating validator rules against real customer reports.
 - Added public customer example positioning for `recommender-systems-from-zero`, `hiking-route-recommender-demo`, and a path-redacted `mt5-research` report pack.
+- Added an official public example allowlist and CI strict validation gate with `--public-report-examples`.
+- Added public example documentation and moved legacy generated customer packs out of the public examples surface.
+- Raised the documented validation level to L4 with residual risk based on repeated audits across materially different project types.
 - Added unit tests for the validator and wired them into CI.
 
 ## 0.1.2

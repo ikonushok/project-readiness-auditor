@@ -217,6 +217,22 @@ Public customer example report packs:
 
 Private validation runs and non-public target reports belong under `reports/validation/` and are ignored by Git. Public examples belong under `reports/customer/`.
 
+## What Good Reports Look Like
+
+Good public report packs are examples of audit discipline, not examples of perfect target projects.
+
+| Quality signal | What to look for |
+|---|---|
+| Explicit validation basis | The report states what was actually inspected or run, and what was not. |
+| Exact command log | Commands are concrete enough to distinguish real evidence from shorthand notes. |
+| Separated report types | `code-only-project-readiness`, `project-readiness`, and `bug-audit` answer different questions. |
+| Clear bug semantics | Bug candidates are ranked separately from missing evidence, `NO_BUG_PROVEN`, and general hardening tasks. |
+| Evidence strength labels | Findings use labels such as `direct code contradiction`, `static config contradiction`, `framework/runtime candidate`, or `product/API gap`. |
+| Honest readiness claim | Runtime, production, trading, deployment, and release claims stay below the evidence actually collected. |
+| Residual risk | The report names the next smallest check needed to raise confidence. |
+
+The public examples intentionally cover different evidence shapes: a stronger L2 educational ML audit, a strict-format static rerun, and a path-redacted high-risk automation audit. This makes the examples useful as a quality bar for future generated reports.
+
 ## How This Differs
 
 `project-readiness-auditor` is an evidence-based audit skill, not a generic static scanner, marketplace, or full software delivery framework.
@@ -365,10 +381,16 @@ To check one customer report pack while older packs are still being cleaned up:
 python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --customer-report-pack hiking-route-recommender-demo
 ```
 
-CI runs the normal scaffold validator, unit tests, and `git diff --check`. The validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
+To validate the official public example allowlist:
+
+```bash
+python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --public-report-examples --report-quality-summary
+```
+
+CI runs the normal scaffold validator, unit tests, strict public example validation, and `git diff --check`. The validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
 The strict report-quality mode is a local hardening gate for real report failure modes: vague command logs, missing validation basis, `NO_BUG_PROVEN` inside bug candidate tables, unsupported evidence-strength labels, missing-evidence rows in immediate bug-fix batches, and unsafe previous-report comparisons without an after-freeze note plus Better/Worse/Unchanged/Evidence columns. The optional summary groups repeated report defects by stable failure-mode code and example report path, which makes validator/template improvements traceable to observed auditor mistakes.
 
-Current validation level: L3 with residual risk. The public customer examples include an L2 educational ML audit, a strict-format static rerun for a recommender demo, and a path-redacted high-risk MT5 research audit. Private validation artifacts remain local under ignored `reports/validation/`.
+Current validation level: L4 with residual risk. The public customer examples cover several materially different project types: an L2 educational ML audit, a strict-format static rerun for a recommender demo, and a path-redacted high-risk MT5 research audit. This is not L5 because release readiness still needs a dedicated red-team review, install verification, and documented release residual risk. Private validation artifacts remain local under ignored `reports/validation/`.
 
 ## Repository Layout
 
