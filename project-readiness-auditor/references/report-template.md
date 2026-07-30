@@ -1,13 +1,18 @@
 # Audit Report Templates
 
-Use these shapes for per-project audit reports. When multiple projects are supplied, produce one report pack per project. Do not combine unrelated projects into one findings report.
+Use these shapes for per-project audit reports. Full report pack is the default for every non-brief project audit. When multiple projects are supplied, produce one report pack per project. Do not combine unrelated projects into one findings report.
 
 ## Report Pack Rules
 
 - One target project per report file.
 - One evidence log per report file.
+- Default non-brief output is `index.md` plus `code-only-project-readiness-YYYY-MM-DD.md`, `project-readiness-YYYY-MM-DD.md`, and `bug-audit-YYYY-MM-DD.md`.
+- Write the default report pack to `reports/customer/<project-slug>/` when the workspace is writable; use another explicit report directory only when the user requests it or the default path is unavailable.
+- Report language must match the user's request language unless the user explicitly requests another language; for mixed-language requests, use the language of the main audit instruction.
+- Use a single compact report only when the user explicitly asks for a brief, summary, short, quick orientation, or otherwise constrained single-report output.
 - Previous audit reports are excluded context for new audit findings. If comparison with older reports is requested, generate the current report pack from primary evidence first, then compare against older reports in a clearly separated comparison section or file.
 - Use stable filenames:
+  - `index.md`
   - `code-only-project-readiness-YYYY-MM-DD.md`
   - `project-readiness-YYYY-MM-DD.md`
   - `bug-audit-YYYY-MM-DD.md`
@@ -19,7 +24,7 @@ Use these shapes for per-project audit reports. When multiple projects are suppl
 - Every report summary must name the target project.
 - Every audit report must include Mandatory Bug Discovery. If no defensible bug candidate is found, report `NO_BUG_PROVEN` for the inspected scope in a dedicated status line or section instead of omitting the section.
 - Do not put `NO_BUG_PROVEN` or `missing evidence` rows inside bug candidate tables or immediate bug-fix batches. Bug tables are for concrete defect candidates only.
-- Full project audits should include a short `index.md` decision brief when report files are written to disk. The index should name the overall verdict, practical readiness stage, top risks, report links, and recommended work order.
+- Full project audits must include a short `index.md` decision brief when report files are written to disk. The index should name the overall verdict, practical readiness stage, top risks, report links, and recommended work order.
 - Do not over-compress real project audits. Keep reports concise, but include enough narrative, product/context explanation, and evidence for a team to make a decision.
 
 ## Report Pack Index

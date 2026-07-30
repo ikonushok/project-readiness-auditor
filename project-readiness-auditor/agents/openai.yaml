@@ -1,7 +1,7 @@
 interface:
   display_name: "Project Readiness Auditor"
   short_description: "Audit project readiness from repository evidence"
-  default_prompt: "Use $project-readiness-auditor to audit this project for readiness risks and mandatory bug candidates from README.md, code, tests, configuration, and deployment evidence. Do not use previous audit reports as examples, evidence, finding sources, or checklists; if comparison is requested, complete the new audit first and compare only afterward."
+  default_prompt: "Use $project-readiness-auditor to audit this project with the default full report pack unless I explicitly ask for a brief summary. Write reports under reports/customer/<project-slug>/: index.md, code-only-project-readiness, project-readiness, and bug-audit, using README/docs-as-intent, code, tests, configuration, CI/deploy evidence, and mandatory bug discovery. Write the reports in the same language as my request unless I explicitly ask for another language. Do not use previous audit reports as examples, evidence, finding sources, or checklists; if comparison is requested, complete the new audit first and compare only afterward."
 
 policy:
   allow_implicit_invocation: true

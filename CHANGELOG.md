@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Made the full report pack the default for every non-brief audit: `index.md`, `code-only-project-readiness`, `project-readiness`, and `bug-audit`.
+- Added validation guardrails so the skill cannot silently collapse the code-only, docs-vs-code readiness, and bug-audit outputs into one report.
+- Made stable on-disk output under `reports/customer/<project-slug>/` the default when the workspace is writable.
+- Added a report-language rule: reports follow the user's request language unless another language is explicitly requested.
+
 ## 0.1.3 - 2026-07-29
 
 - Removed the hardcoded customer report date from public report-pack validation.

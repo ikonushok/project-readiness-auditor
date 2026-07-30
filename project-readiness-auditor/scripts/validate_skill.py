@@ -23,7 +23,13 @@ REQUIRED_TERMS = {
     "SKILL.md": [
         "Project Readiness Auditor",
         "Default Workflow",
+        "Default: every non-brief project audit produces a full report pack",
         "one report pack per project",
+        "Do not collapse code-only, docs-vs-code readiness, and bug audit into one report",
+        "Write the full report pack to `reports/customer/<project-slug>/` by default",
+        "Do not replace the stable on-disk report pack with a chat-only summary",
+        "Report language follows the user's request language",
+        "Do not switch report language away from the user's request language",
         "code-only-project-readiness",
         "bug-audit",
         "Mandatory Bug Discovery",
@@ -50,6 +56,10 @@ REQUIRED_TERMS = {
         "Timebox Profiles",
         "Fix The Audit Mode",
         "Choose The Report Pack",
+        "Full report pack is the default for every project audit",
+        "Create the full report pack by default",
+        "Write the full report pack to `reports/customer/<project-slug>/` by default",
+        "Report language follows the user's request language",
         "Compare Previous Reports Only After Freeze",
         "Claim Strength Rules",
         "framework/runtime candidate",
@@ -95,6 +105,10 @@ REQUIRED_TERMS = {
     "references/report-template.md": [
         "Summary",
         "Report Pack Rules",
+        "Full report pack is the default for every non-brief project audit",
+        "Default non-brief output is `index.md` plus",
+        "Write the default report pack to `reports/customer/<project-slug>/`",
+        "Report language must match the user's request language",
         "Report Pack Index",
         "Previous Report Comparison",
         "Previous reports are comparison artifacts",
@@ -355,6 +369,38 @@ METHODOLOGY_REGRESSION_RULES = {
         "references/report-template.md": [
             "One target project per report file",
             "One evidence log per report file",
+        ],
+    },
+    "default full report pack": {
+        "SKILL.md": [
+            "Default: every non-brief project audit produces a full report pack",
+            "Do not collapse code-only, docs-vs-code readiness, and bug audit into one report",
+            "Write the full report pack to `reports/customer/<project-slug>/` by default",
+            "Report language follows the user's request language",
+        ],
+        "references/audit-methodology.md": [
+            "Full report pack is the default for every project audit",
+            "Create the full report pack by default",
+            "Write the full report pack to `reports/customer/<project-slug>/` by default",
+            "Report language follows the user's request language",
+        ],
+        "references/report-template.md": [
+            "Full report pack is the default for every non-brief project audit",
+            "Default non-brief output is `index.md` plus",
+            "Write the default report pack to `reports/customer/<project-slug>/`",
+            "Report language must match the user's request language",
+        ],
+    },
+    "request language output": {
+        "SKILL.md": [
+            "Report language follows the user's request language",
+            "Do not switch report language away from the user's request language",
+        ],
+        "references/audit-methodology.md": [
+            "Report language follows the user's request language",
+        ],
+        "references/report-template.md": [
+            "Report language must match the user's request language",
         ],
     },
 }

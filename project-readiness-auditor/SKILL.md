@@ -1,6 +1,6 @@
 ---
 name: project-readiness-auditor
-description: Evidence-based auditor for third-party software projects. Use for code-only review, docs-vs-code validation, readiness assessment, risk classification, technical due diligence, and actionable Markdown reports.
+description: Evidence-based auditor for third-party software projects. Use for code-only review, docs-vs-code validation, readiness assessment, risk classification, technical due diligence, and actionable Markdown report packs. By default, non-brief audits produce an index plus code-only, project-readiness, and bug-audit reports.
 ---
 
 # Project Readiness Auditor
@@ -15,26 +15,32 @@ Audit third-party repositories by proving or rejecting project claims with concr
    - `runtime`: run setup, build, tests, smoke checks, or local scenarios when feasible.
    - `security`: inspect auth, secrets, CORS, permissions, debug endpoints, and external calls.
    - `production-readiness`: inspect reproducibility, deployment, observability, migrations, rollback, and operational risk.
-2. If multiple projects are supplied, audit each project separately. Never merge unrelated projects into one findings report. Produce one report pack per project.
-3. Treat previous audit reports as excluded context for the new audit. They are never examples, sources of findings, source-of-truth evidence, or checklists. If the user asks to compare with older reports, first complete and freeze the new audit from primary evidence only; then inspect older reports only as comparison artifacts.
-4. If the user asks for "all reports", "customer reports", "full readiness", or gives examples that include several report styles, produce these per-project report types:
+2. Classify the requested output:
+   - Default: every non-brief project audit produces a full report pack with `index.md` plus the three reports below.
+   - Brief exception: produce one compact report only when the user explicitly asks for a brief, summary, short, quick orientation, or otherwise constrained single-report output.
+3. If multiple projects are supplied, audit each project separately. Never merge unrelated projects into one findings report. Produce one report pack per project.
+4. Treat previous audit reports as excluded context for the new audit. They are never examples, sources of findings, source-of-truth evidence, or checklists. If the user asks to compare with older reports, first complete and freeze the new audit from primary evidence only; then inspect older reports only as comparison artifacts.
+5. For every non-brief audit, produce these per-project report files and do not collapse them into one report:
+   - `index.md`: decision brief linking the reports, overall verdict, stage, top risks, commands, missing evidence, residual risk, and work order.
    - `code-only-project-readiness`: code, tests, executable config, CI/deploy evidence only; documentation is not proof.
    - `project-readiness`: goals/docs-vs-code readiness against stated project objectives.
    - `bug-audit`: mandatory ranked bug candidates with reproduction plan and test-first next steps.
-5. If the user gives a timebox, scale depth to it: 30 minutes for orientation, 2 hours for docs-vs-code and contracts, 1 day for runtime-backed readiness, 3-5 days for due diligence.
-6. Build a project map: languages, frameworks, entrypoints, services, workers, APIs, database, queues, caches, UI, tests, deploy, monitoring, and external integrations.
-7. Run Mandatory Bug Discovery immediately for every audit. Trace reachable inputs, contracts, state transitions, edge cases, error paths, and real callers; rank concrete bug candidates by contract strength, reachability, reproducibility, and impact.
-8. Classify claim strength before writing findings: `reproduced`, `direct code contradiction`, `static config contradiction`, `framework/runtime candidate`, or `product/API gap`. Do not treat route ordering, dependency injection, middleware, database, queue, or external-service behavior as proven without runtime or framework-specific evidence.
-9. Check reproducibility: dependency manifests, lock files, setup commands, required environment variables, build commands, test commands, and local runtime path. Compare settings schema against env examples, compose, Helm, and CI instead of only listing those files.
-10. Check cross-part contracts: UI client vs backend routes, routers vs services, DTOs vs producers/consumers, models vs migrations, env settings vs compose/Helm, monitoring targets vs service names/ports/metrics paths, file/object paths across producers and consumers.
-11. Search for unfinished work: TODO, FIXME, stubs, placeholder handlers, unregistered routes, dead modules, missing persistence, UI pages without backing APIs, and routers/services/admin screens that exist but are not wired into the application entrypoint.
-12. Review reliability and security risks.
-13. Write reports as decision documents, not scanner dumps:
+6. Write the full report pack to `reports/customer/<project-slug>/` by default when the workspace is writable. If that path is unavailable, write to the user-approved report directory or return the same four named reports in chat; do not silently collapse the pack.
+7. Report language follows the user's request language unless the user explicitly asks for another language. For mixed-language requests, use the language of the main audit instruction.
+8. If the user gives a timebox, scale depth to it: 30 minutes for orientation, 2 hours for docs-vs-code and contracts, 1 day for runtime-backed readiness, 3-5 days for due diligence. A timebox changes depth, not the default full-report-pack shape, unless the user also asks for a brief output.
+9. Build a project map: languages, frameworks, entrypoints, services, workers, APIs, database, queues, caches, UI, tests, deploy, monitoring, and external integrations.
+10. Run Mandatory Bug Discovery immediately for every audit. Trace reachable inputs, contracts, state transitions, edge cases, error paths, and real callers; rank concrete bug candidates by contract strength, reachability, reproducibility, and impact.
+11. Classify claim strength before writing findings: `reproduced`, `direct code contradiction`, `static config contradiction`, `framework/runtime candidate`, or `product/API gap`. Do not treat route ordering, dependency injection, middleware, database, queue, or external-service behavior as proven without runtime or framework-specific evidence.
+12. Check reproducibility: dependency manifests, lock files, setup commands, required environment variables, build commands, test commands, and local runtime path. Compare settings schema against env examples, compose, Helm, and CI instead of only listing those files.
+13. Check cross-part contracts: UI client vs backend routes, routers vs services, DTOs vs producers/consumers, models vs migrations, env settings vs compose/Helm, monitoring targets vs service names/ports/metrics paths, file/object paths across producers and consumers.
+14. Search for unfinished work: TODO, FIXME, stubs, placeholder handlers, unregistered routes, dead modules, missing persistence, UI pages without backing APIs, and routers/services/admin screens that exist but are not wired into the application entrypoint.
+15. Review reliability and security risks.
+16. Write reports as decision documents, not scanner dumps:
    - start with an executive narrative that names the practical stage, the main decision, the main risks, and the next work batch;
    - include product maturity for customer/product audits, including phases, stage/prod contour, operations, and roadmap-only capabilities when visible;
    - include code-visible tasks in code-only audits so readers understand what the project actually does without documentation;
    - keep detailed evidence, commands, and missing proof, but avoid duplicating the same findings table across every section.
-14. Classify project stage and produce evidence-backed Markdown reports with prioritized closure plans.
+17. Classify project stage and produce evidence-backed Markdown reports with prioritized closure plans.
 
 ## References
 
@@ -71,12 +77,23 @@ Root workspace files such as `AGENTS.md`, `CLAUDE.md`, `.claude/`, and root `age
 - Do not change production code for a reproduced bug without a second explicit approval for the exact production files and fix.
 - Do not inflate agent count unless a recurring audit workflow has a distinct trigger, checklist, and output.
 - Do not combine findings for multiple target projects into a single readiness report.
-- Do not write customer-style audit output until you have chosen the report type and target project for that output.
-- Do not produce an over-compressed report for a real project audit. Unless the user requests a brief summary, each report must include enough narrative and evidence for a team to make a decision without asking what the project actually does.
+- Do not collapse code-only, docs-vs-code readiness, and bug audit into one report for a non-brief audit.
+- Do not replace the stable on-disk report pack with a chat-only summary when the workspace can be written.
+- Do not switch report language away from the user's request language unless the user explicitly asks for another language.
+- Do not produce an over-compressed report for a real project audit. Unless the user requests a brief summary, produce the full report pack and make each report detailed enough for a team to make a decision without asking what the project actually does.
 
 ## Output
 
-Return:
+For non-brief audits, write one report pack per target project under `reports/customer/<project-slug>/` by default when the workspace is writable:
+
+- `index.md`;
+- `code-only-project-readiness-YYYY-MM-DD.md`;
+- `project-readiness-YYYY-MM-DD.md`;
+- `bug-audit-YYYY-MM-DD.md`.
+
+Report language must match the user's request language unless the user explicitly requests another language.
+
+Each report must include:
 
 - audit mode;
 - report type;

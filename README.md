@@ -189,15 +189,23 @@ Each action should name the smallest next proof that would raise confidence.
 
 When several projects are supplied, `project-readiness-auditor` must split them first. The correct output is one report pack per project, not one combined report.
 
-Supported customer report types:
+For any non-brief project audit, the default output is a full report pack:
 
+- `index.md`: decision brief, overall verdict, practical stage, top risks, links, commands, missing evidence, residual risk, and work order.
 - `code-only-project-readiness`: a code-only baseline that ignores documentation as proof.
 - `project-readiness`: readiness against stated or inferred goals, using documentation as intent and implementation evidence as proof.
 - `bug-audit`: mandatory ranked bug candidates with file evidence, trigger conditions, confidence, approval-gated reproduction plan, and approval-gated fix path.
 
+When the workspace is writable, the skill writes this pack under `reports/customer/<project-slug>/` by default.
+
+Report language follows the user's request language unless the user explicitly asks for another language.
+
+Use a single compact report only when the user explicitly asks for a brief, summary, short, quick orientation, or otherwise constrained single-report output.
+
 Use stable report paths when writing files:
 
 ```text
+reports/customer/<project-slug>/index.md
 reports/customer/<project-slug>/code-only-project-readiness-YYYY-MM-DD.md
 reports/customer/<project-slug>/project-readiness-YYYY-MM-DD.md
 reports/customer/<project-slug>/bug-audit-YYYY-MM-DD.md
@@ -320,7 +328,7 @@ cp -R project-readiness-auditor ~/.codex/skills/project-readiness-auditor
 Restart Codex, then use:
 
 ```text
-Use $project-readiness-auditor to audit each supplied project separately. For every target project, produce a report pack with code-only-project-readiness, project-readiness, and mandatory bug-audit reports under reports/customer/<project-slug>/. Use README/specs only as intent, cite code/tests/config/deployment evidence, record commands run, ranked bug candidates or NO_BUG_PROVEN, missing evidence, residual risk, and a prioritized closure plan.
+Use $project-readiness-auditor to audit each supplied project separately. Unless I explicitly ask for a brief summary, write the default full report pack for every target project under reports/customer/<project-slug>/: index.md, code-only-project-readiness, project-readiness, and mandatory bug-audit. Write the reports in the same language as my request unless I explicitly ask for another language. Use README/specs only as intent, cite code/tests/config/deployment evidence, record commands run, ranked bug candidates or NO_BUG_PROVEN, missing evidence, residual risk, and a prioritized closure plan.
 ```
 
 ## Expected Report

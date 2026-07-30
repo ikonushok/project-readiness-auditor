@@ -41,11 +41,28 @@ Cross-project summaries are allowed only as an index after all per-project repor
 
 ## 1a. Choose The Report Pack
 
-Use separate report types for separate questions. Mandatory Bug Discovery is part of every audit, even when the requested report is not a standalone `bug-audit`. If the user asks for a full customer-style audit, produce the relevant report types below for each project and always include `bug-audit`.
+Full report pack is the default for every project audit unless the user explicitly asks for a brief, summary, short, quick orientation, or otherwise constrained single-report output. A full report pack contains:
+
+- `index.md`;
+- `code-only-project-readiness-YYYY-MM-DD.md`;
+- `project-readiness-YYYY-MM-DD.md`;
+- `bug-audit-YYYY-MM-DD.md`.
+
+Write the full report pack to `reports/customer/<project-slug>/` by default when the workspace is writable. If that path is unavailable, use the user-approved report directory or return the same four named reports in chat. Do not silently collapse a non-brief audit into one report.
+
+Report language follows the user's request language unless the user explicitly asks for another language. For mixed-language requests, use the language of the main audit instruction.
+
+Use separate report types for the three core audit questions:
+
+1. What does the code/config/test/deploy evidence prove without trusting documentation?
+2. How well does the implementation match documentation, stated goals, and inferred project objectives?
+3. What concrete bug candidates and high-risk defects are visible, and what is the approval-gated reproduction/fix path?
+
+Mandatory Bug Discovery is part of every audit, even for brief output. For non-brief output, always include the standalone `bug-audit` report.
 
 For full project audits, the report pack must read like a decision aid, not just an evidence log. Start with the practical verdict, maturity stage, approximate readiness for the relevant use case when defensible, the top risks, and the next work batch. Then provide evidence. Do not hide the conclusion until the end.
 
-Avoid over-compression. A useful report should be short enough to read, but deep enough that a team can understand what the project actually does, what is mature, what is incomplete, and what to do next. If a report becomes too dense, split it into an index plus `code-only-project-readiness`, `project-readiness`, and `bug-audit` files rather than deleting depth.
+Avoid over-compression. A useful report should be short enough to read, but deep enough that a team can understand what the project actually does, what is mature, what is incomplete, and what to do next. For non-brief audits, preserve depth by using the default index plus `code-only-project-readiness`, `project-readiness`, and `bug-audit` files rather than deleting sections or merging the three questions into one document.
 
 ## 1b. Compare Previous Reports Only After Freeze
 
@@ -379,9 +396,10 @@ Every substantial project report should include:
 For multi-project work, write report files using a stable per-project layout when writing to disk:
 
 ```text
+reports/customer/<project-slug>/index.md
 reports/customer/<project-slug>/code-only-project-readiness-YYYY-MM-DD.md
 reports/customer/<project-slug>/project-readiness-YYYY-MM-DD.md
 reports/customer/<project-slug>/bug-audit-YYYY-MM-DD.md
 ```
 
-Create the report types that match the user's request, but never omit Mandatory Bug Discovery from the audit evidence. For full customer-style audits, include the standalone `bug-audit` report. If the user points to examples with all three styles and asks for the skill to support them, update the skill templates and validation rules rather than generating customer audit reports for this repository.
+Create the full report pack by default and write it to `reports/customer/<project-slug>/` when the workspace is writable. Create a single report only when the user explicitly requests a brief/summary/short output or a tightly constrained single-report audit. Never omit Mandatory Bug Discovery from the audit evidence. If the user points to examples with all three styles and asks for the skill to support them, update the skill templates and validation rules rather than generating customer audit reports for this repository.
