@@ -7,6 +7,10 @@ description: Evidence-based auditor for third-party software projects. Use for c
 
 Audit third-party repositories by proving or rejecting project claims with concrete evidence.
 
+## Package Version
+
+`0.1.3`
+
 ## Default Workflow
 
 1. Choose the audit mode:

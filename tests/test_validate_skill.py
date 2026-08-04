@@ -142,6 +142,24 @@ class ValidateSkillTests(unittest.TestCase):
 
         self.assertEqual([], errors)
 
+    def test_skill_package_rejects_version_mismatch(self) -> None:
+        skill_root = REPO_ROOT / "project-readiness-auditor"
+        skill_text = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            temporary_repo = Path(tmpdir)
+            temporary_skill = temporary_repo / "project-readiness-auditor"
+            temporary_skill.mkdir()
+            write_file(
+                temporary_skill / "SKILL.md",
+                skill_text.replace("`0.1.3`", "`999.999.999`", 1),
+            )
+            write_file(temporary_repo / "VERSION", "0.1.3\n")
+
+            errors = validator.validate(temporary_skill)
+
+        self.assertTrue(any("package version does not match VERSION" in error for error in errors))
+
     def test_skill_package_rejects_generated_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             skill_root = Path(tmpdir) / "project-readiness-auditor"
