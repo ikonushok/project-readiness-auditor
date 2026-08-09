@@ -761,6 +761,11 @@ def main() -> int:
         help="Validate only the official public customer example report packs.",
     )
     parser.add_argument(
+        "--all-customer-report-packs",
+        action="store_true",
+        help="Validate every reports/customer report pack without requiring strict report quality.",
+    )
+    parser.add_argument(
         "--report-quality-summary",
         action="store_true",
         help="Print grouped customer report-pack failure modes after validation.",
@@ -777,14 +782,21 @@ def main() -> int:
         errors = validate(root)
         errors.extend(validate_methodology_regressions(root))
         repo_root = root.parent
-        errors.extend(
-            validate_customer_report_pack(
-                repo_root,
-                strict_quality=args.strict_report_quality,
-                report_pack=args.customer_report_pack,
-                public_examples=args.public_report_examples,
-            )
+        validate_reports = (
+            args.all_customer_report_packs
+            or args.strict_report_quality
+            or args.customer_report_pack is not None
+            or args.public_report_examples
         )
+        if validate_reports:
+            errors.extend(
+                validate_customer_report_pack(
+                    repo_root,
+                    strict_quality=args.strict_report_quality,
+                    report_pack=args.customer_report_pack,
+                    public_examples=args.public_report_examples,
+                )
+            )
     except UnicodeDecodeError as exc:
         print(f"ERROR: invalid UTF-8: {exc}")
         print("RESULT: FAIL L0")

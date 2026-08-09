@@ -316,6 +316,8 @@ The installable Codex skill is under [`project-readiness-auditor/`](project-read
 
 Root `AGENTS.md`, root `CLAUDE.md`, `.claude/`, `.codex/`, `.agents/`, and root `agents/` are local authoring files when present. They are ignored by Git and are not part of the public package.
 
+Use [`HOW_TO_CREATE_AUDIT_SKILL.md`](HOW_TO_CREATE_AUDIT_SKILL.md) when creating a focused audit skill from this methodology.
+
 ## Install For Codex
 
 From the repository root:
@@ -371,10 +373,22 @@ Run the validator regression tests:
 PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests
 ```
 
+Validate the local authoring agent pack:
+
+```bash
+python3 scripts/validate_pack.py .
+```
+
 Run strict report-quality diagnostics when hardening generated customer reports:
 
 ```bash
 python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality
+```
+
+Validate every customer report pack structurally without strict quality checks:
+
+```bash
+python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --all-customer-report-packs
 ```
 
 Add grouped failure-mode output when calibrating the validator against real reports:
@@ -395,7 +409,7 @@ To validate the official public example allowlist:
 python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --public-report-examples --report-quality-summary
 ```
 
-CI runs the normal scaffold validator, unit tests, strict public example validation, and `git diff --check`. The validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
+CI runs the normal scaffold validator, local agent-pack validator, unit tests, strict public example validation, and `git diff --check`. The skill validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
 The strict report-quality mode is a local hardening gate for real report failure modes: vague command logs, missing validation basis, `NO_BUG_PROVEN` inside bug candidate tables, unsupported evidence-strength labels, missing-evidence rows in immediate bug-fix batches, and unsafe previous-report comparisons without an after-freeze note plus Better/Worse/Unchanged/Evidence columns. The optional summary groups repeated report defects by stable failure-mode code and example report path, which makes validator/template improvements traceable to observed auditor mistakes.
 
 Current validation level: L5 candidate with residual risk. The public customer examples cover several materially different project types, and [`reports/release/release-readiness-2026-07-29.md`](reports/release/release-readiness-2026-07-29.md) records install verification, public example validation, red-team overclaim checks, and residual risk. This is not full L5 because real Codex app restart/invocation evidence and external red-team review are still missing. Private validation artifacts remain local under ignored `reports/validation/`.
@@ -405,6 +419,8 @@ Current validation level: L5 candidate with residual risk. The public customer e
 - [`project-readiness-auditor/`](project-readiness-auditor/): public installable skill package.
 - [`reports/customer/`](reports/customer/): public example report packs.
 - [`reports/release/`](reports/release/): public release-readiness evidence.
+- [`scripts/validate_pack.py`](scripts/validate_pack.py): local authoring agent-pack validation.
+- [`HOW_TO_CREATE_AUDIT_SKILL.md`](HOW_TO_CREATE_AUDIT_SKILL.md): internal guide for creating focused audit skills.
 - [`.github/workflows/validate.yml`](.github/workflows/validate.yml): package validation in CI.
 - [`CHANGELOG.md`](CHANGELOG.md): release notes.
 - [`README.md`](README.md): public project overview and audit methodology.

@@ -152,7 +152,7 @@ class ValidateSkillTests(unittest.TestCase):
             temporary_skill.mkdir()
             write_file(
                 temporary_skill / "SKILL.md",
-                skill_text.replace("`0.1.3`", "`999.999.999`", 1),
+                skill_text.replace("`0.1.4`", "`999.999.999`", 1),
             )
             write_file(temporary_repo / "VERSION", "0.1.3\n")
 

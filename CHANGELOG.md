@@ -2,10 +2,16 @@
 
 ## Unreleased
 
+## 0.1.4 - 2026-08-09
+
 - Made the full report pack the default for every non-brief audit: `index.md`, `code-only-project-readiness`, `project-readiness`, and `bug-audit`.
 - Added validation guardrails so the skill cannot silently collapse the code-only, docs-vs-code readiness, and bug-audit outputs into one report.
 - Made stable on-disk output under `reports/customer/<project-slug>/` the default when the workspace is writable.
 - Added a report-language rule: reports follow the user's request language unless another language is explicitly requested.
+- Added an explicit local agent-pack validator for `AGENTS.md`, routing, reviewers, package boundaries, and local authoring ignores.
+- Added `HOW_TO_CREATE_AUDIT_SKILL.md` for creating focused audit skills without bloating the agent pack.
+- Removed generated `.DS_Store` files from the local package/workspace surface.
+- Made customer report-pack validation opt-in for the normal skill scaffold command so local untracked reports do not break package validation.
 
 ## 0.1.3 - 2026-07-29
 

@@ -9,7 +9,7 @@ Audit third-party repositories by proving or rejecting project claims with concr
 
 ## Package Version
 
-`0.1.3`
+`0.1.4`
 
 ## Default Workflow
 
