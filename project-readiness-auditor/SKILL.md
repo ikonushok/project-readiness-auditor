@@ -7,9 +7,9 @@ description: Evidence-based auditor for third-party software projects. Use for c
 
 Audit third-party repositories by proving or rejecting project claims with concrete evidence.
 
-## Package Version
+## Installed Version
 
-`0.1.4`
+At the start of a task, read `VERSION` in this skill directory to identify the installed package version. Include that version in validation reports, audits, release-readiness assessments, and compatibility diagnosis when it helps trace the result. Do not add it to ordinary user-facing replies unless it is relevant.
 
 ## Default Workflow
 

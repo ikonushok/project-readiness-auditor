@@ -22,6 +22,7 @@ Use this package shape:
 ```text
 audit-skill-name/
 ├── SKILL.md
+├── VERSION
 ├── agents/
 │   └── openai.yaml
 ├── references/
@@ -56,6 +57,7 @@ description: What the skill does and exactly when to use it.
 
 The body should include:
 
+- installed-version instructions that tell the agent to read `VERSION` in the skill directory when version traceability is relevant;
 - default workflow;
 - audit modes;
 - evidence rules;
@@ -128,5 +130,7 @@ Do not claim L3 or higher from static validation alone. L3 requires applying the
 ## Versioning
 
 Raise the patch version when changing package behavior, validation rules, report templates, or public skill instructions.
+
+Keep the root repository `VERSION`, installable skill `VERSION`, and release notes aligned.
 
 Do not create a git tag just because the version changed. Create a tag only when publishing a release after validation passes.

@@ -150,15 +150,13 @@ class ValidateSkillTests(unittest.TestCase):
             temporary_repo = Path(tmpdir)
             temporary_skill = temporary_repo / "project-readiness-auditor"
             temporary_skill.mkdir()
-            write_file(
-                temporary_skill / "SKILL.md",
-                skill_text.replace("`0.1.4`", "`999.999.999`", 1),
-            )
-            write_file(temporary_repo / "VERSION", "0.1.3\n")
+            write_file(temporary_skill / "SKILL.md", skill_text)
+            write_file(temporary_skill / "VERSION", "999.999.999\n")
+            write_file(temporary_repo / "VERSION", "0.1.4\n")
 
             errors = validator.validate(temporary_skill)
 
-        self.assertTrue(any("package version does not match VERSION" in error for error in errors))
+        self.assertTrue(any("skill package VERSION does not match repository VERSION" in error for error in errors))
 
     def test_skill_package_rejects_generated_files(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:

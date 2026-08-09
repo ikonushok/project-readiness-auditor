@@ -12,6 +12,7 @@
 - Added `HOW_TO_CREATE_AUDIT_SKILL.md` for creating focused audit skills without bloating the agent pack.
 - Removed generated `.DS_Store` files from the local package/workspace surface.
 - Made customer report-pack validation opt-in for the normal skill scaffold command so local untracked reports do not break package validation.
+- Added an installable skill `VERSION` file and `Installed Version` instructions matching the `agent-pack-designer` pattern.
 
 ## 0.1.3 - 2026-07-29
 

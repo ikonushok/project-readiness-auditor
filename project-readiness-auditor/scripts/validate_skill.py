@@ -12,6 +12,7 @@ from pathlib import Path
 
 REQUIRED_FILES = [
     "SKILL.md",
+    "VERSION",
     "agents/openai.yaml",
     "references/audit-methodology.md",
     "references/prior-report-freeze-validation-scenario.md",
@@ -19,12 +20,13 @@ REQUIRED_FILES = [
     "references/report-template.md",
 ]
 
-VERSION_HEADING = "## Package Version"
-VERSION_VALUE_RE = re.compile(r"^`(?P<version>[^`\r\n]+)`$", re.MULTILINE)
+VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
 REQUIRED_TERMS = {
     "SKILL.md": [
         "Project Readiness Auditor",
+        "Installed Version",
+        "read `VERSION` in this skill directory",
         "Default Workflow",
         "Default: every non-brief project audit produces a full report pack",
         "one report pack per project",
@@ -413,15 +415,6 @@ def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def skill_package_version(skill_text: str) -> str | None:
-    """Return the version declared in the installed skill instructions."""
-    if VERSION_HEADING not in skill_text:
-        return None
-    version_section = skill_text.split(VERSION_HEADING, 1)[1].split("## ", 1)[0]
-    match = VERSION_VALUE_RE.search(version_section)
-    return match.group("version") if match else None
-
-
 def validate(root: Path) -> list[str]:
     errors: list[str] = []
 
@@ -448,18 +441,21 @@ def validate(root: Path) -> list[str]:
         if not DESCRIPTION_RE.search(skill_text):
             errors.append("SKILL.md frontmatter must include description")
 
-        package_version = skill_package_version(skill_text)
-        if package_version is None:
-            errors.append("SKILL.md must declare a package version under '## Package Version'")
+        version_path = root / "VERSION"
+        if not version_path.is_file():
+            errors.append("missing package version file: VERSION")
         else:
-            version_path = root.parent / "VERSION"
-            if not version_path.is_file():
-                errors.append(f"missing repository version file: {version_path}")
+            package_version = read_text(version_path).strip()
+            if not VERSION_RE.fullmatch(package_version):
+                errors.append(f"VERSION must contain a semantic version: {package_version!r}")
+            repository_version_path = root.parent / "VERSION"
+            if not repository_version_path.is_file():
+                errors.append(f"missing repository version file: {repository_version_path}")
             else:
-                repository_version = read_text(version_path).strip()
+                repository_version = read_text(repository_version_path).strip()
                 if package_version != repository_version:
                     errors.append(
-                        "SKILL.md package version does not match VERSION: "
+                        "skill package VERSION does not match repository VERSION: "
                         f"{package_version!r} != {repository_version!r}"
                     )
 

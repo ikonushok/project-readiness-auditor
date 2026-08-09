@@ -307,6 +307,7 @@ Use timeboxes when the audit must be fast.
 The installable Codex skill is under [`project-readiness-auditor/`](project-readiness-auditor/):
 
 - [`SKILL.md`](project-readiness-auditor/SKILL.md): compact skill entry point and default workflow.
+- [`VERSION`](project-readiness-auditor/VERSION): installed skill package version.
 - [`agents/openai.yaml`](project-readiness-auditor/agents/openai.yaml): Codex interface metadata.
 - [`references/audit-methodology.md`](project-readiness-auditor/references/audit-methodology.md): detailed audit workflow.
 - [`references/prior-report-freeze-validation-scenario.md`](project-readiness-auditor/references/prior-report-freeze-validation-scenario.md): validation scenario for older-report isolation.
@@ -424,7 +425,7 @@ Current validation level: L5 candidate with residual risk. The public customer e
 - [`.github/workflows/validate.yml`](.github/workflows/validate.yml): package validation in CI.
 - [`CHANGELOG.md`](CHANGELOG.md): release notes.
 - [`README.md`](README.md): public project overview and audit methodology.
-- [`VERSION`](VERSION): package version.
+- [`VERSION`](VERSION): repository package version.
 - [`LICENSE`](LICENSE): license.
 - `.gitignore`: keeps local assistant workspace files out of Git.
 

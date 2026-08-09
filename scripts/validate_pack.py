@@ -132,6 +132,17 @@ SKILL_PACKAGE_LOCAL_TERMS = [
     "Do not depend on them for installed-skill behavior",
 ]
 
+SKILL_PACKAGE_FILES = [
+    "SKILL.md",
+    "VERSION",
+    "agents/openai.yaml",
+    "references/audit-methodology.md",
+    "references/prior-report-freeze-validation-scenario.md",
+    "references/readiness-rubric.md",
+    "references/report-template.md",
+    "scripts/validate_skill.py",
+]
+
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
@@ -173,6 +184,10 @@ def validate_skill_boundary(root: Path) -> list[str]:
     skill_root = root / "project-readiness-auditor"
     if not skill_root.is_dir():
         return ["missing installable skill package: project-readiness-auditor"]
+
+    for relative in SKILL_PACKAGE_FILES:
+        if not (skill_root / relative).is_file():
+            errors.append(f"installable skill missing required file: {relative}")
 
     for relative in LOCAL_AUTHORING_PATHS:
         if (skill_root / relative).exists():
