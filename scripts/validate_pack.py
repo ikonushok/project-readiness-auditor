@@ -140,6 +140,7 @@ SKILL_PACKAGE_FILES = [
     "references/prior-report-freeze-validation-scenario.md",
     "references/readiness-rubric.md",
     "references/report-template.md",
+    "scripts/install_smoke.py",
     "scripts/validate_skill.py",
 ]
 

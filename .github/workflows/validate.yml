@@ -31,5 +31,8 @@ jobs:
       - name: Validate public report examples
         run: python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --public-report-examples --report-quality-summary
 
+      - name: Install-smoke skill package
+        run: python3 project-readiness-auditor/scripts/install_smoke.py .
+
       - name: Check whitespace
         run: git diff --check

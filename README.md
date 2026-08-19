@@ -313,6 +313,7 @@ The installable Codex skill is under [`project-readiness-auditor/`](project-read
 - [`references/prior-report-freeze-validation-scenario.md`](project-readiness-auditor/references/prior-report-freeze-validation-scenario.md): validation scenario for older-report isolation.
 - [`references/readiness-rubric.md`](project-readiness-auditor/references/readiness-rubric.md): readiness stages, severities, evidence strength, verdicts, and validation levels.
 - [`references/report-template.md`](project-readiness-auditor/references/report-template.md): Markdown report shape.
+- [`scripts/install_smoke.py`](project-readiness-auditor/scripts/install_smoke.py): clean install smoke for the skill package and public report examples.
 - [`scripts/validate_skill.py`](project-readiness-auditor/scripts/validate_skill.py): static package validation.
 
 Root `AGENTS.md`, root `CLAUDE.md`, `.claude/`, `.codex/`, `.agents/`, and root `agents/` are local authoring files when present. They are ignored by Git and are not part of the public package.
@@ -366,6 +367,18 @@ Expected result:
 
 ```text
 RESULT: PASS L0
+```
+
+Run the install smoke:
+
+```bash
+python3 project-readiness-auditor/scripts/install_smoke.py .
+```
+
+Expected result:
+
+```text
+RESULT: PASS install-smoke
 ```
 
 Run the validator regression tests:

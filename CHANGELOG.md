@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 0.1.5 - 2026-08-19
+
+- Added a stronger install-smoke that simulates a clean Codex skill install, runs the validator from the installed copy, and validates public report examples through the installed package.
+- Added the install-smoke to CI and the public package contract.
+
 ## 0.1.4 - 2026-08-09
 
 - Made the full report pack the default for every non-brief audit: `index.md`, `code-only-project-readiness`, `project-readiness`, and `bug-audit`.

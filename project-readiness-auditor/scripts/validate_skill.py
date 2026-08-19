@@ -18,6 +18,8 @@ REQUIRED_FILES = [
     "references/prior-report-freeze-validation-scenario.md",
     "references/readiness-rubric.md",
     "references/report-template.md",
+    "scripts/install_smoke.py",
+    "scripts/validate_skill.py",
 ]
 
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
