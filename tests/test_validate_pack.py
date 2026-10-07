@@ -30,6 +30,10 @@ def write_file(path: Path, text: str) -> None:
     path.write_text(text, encoding="utf-8")
 
 
+@unittest.skipUnless(
+    all((REPO_ROOT / relative).is_file() for relative in validator.REQUIRED_AGENT_PACK_FILES),
+    "Local authoring files are absent from the public checkout",
+)
 class ValidatePackTests(unittest.TestCase):
     def test_live_agent_pack_passes_static_consistency_checks(self) -> None:
         self.assertEqual([], validator.validate(REPO_ROOT))

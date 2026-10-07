@@ -16,7 +16,7 @@ Previous audit reports are excluded from new-audit evidence. They must not be us
 
 This repository follows the same public-package shape as [`agent-pack-designer`](https://github.com/ikonushok/agent-pack-designer): a compact installable skill, reference files loaded only when needed, package validation scripts, and root documentation that explains the operating model.
 
-Tags: `project-audit`, `code-review`, `readiness-assessment`, `software-quality`, `evidence-based`, `technical-due-diligence`, `risk-analysis`, `markdown-reports`.
+Tags: `project-audit`, `code-review`, `readiness-assessment`, `software-quality`, `evidence-based`, `technical-due-diligence`, `risk-analysis`, `markdown-reports`, `spec-kit`.
 
 ## Methodology
 
@@ -441,7 +441,7 @@ For an explicitly requested brief report saved outside the default report pack:
 python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --spec-traceability-report /path/to/report.md
 ```
 
-CI runs the normal scaffold validator, local agent-pack validator, unit tests, strict public example validation, and `git diff --check`. The skill validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
+CI runs the normal scaffold validator, unit tests, strict public example validation, install-smoke, and `git diff --check`. The local agent-pack step and its three tests run only when the ignored authoring files are present; public checkouts skip those local-only checks. The skill validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
 The strict report-quality mode is a local hardening gate for real report failure modes: vague command logs, missing validation basis, `NO_BUG_PROVEN` inside bug candidate tables, unsupported evidence-strength labels, missing-evidence rows in immediate bug-fix batches, and unsafe previous-report comparisons without an after-freeze note plus Better/Worse/Unchanged/Evidence columns. The optional summary groups repeated report defects by stable failure-mode code and example report path, which makes validator/template improvements traceable to observed auditor mistakes.
 
 Release 0.1.6 evidence is recorded in [`reports/release/release-validation-0.1.6-2026-10-07.md`](reports/release/release-validation-0.1.6-2026-10-07.md): package/report checks, 32 regression tests, clean-install smoke, and an independent static specification-audit forward-test. The new workflow has focused L1 evidence; the local authoring-pack consistency check reports L2 separately. This does not establish target runtime behavior, broad cross-project performance, or full L5 release readiness. Real Codex restart/invocation and external red-team evidence remain outside this validation. Private validation artifacts remain local under ignored `reports/validation/`.

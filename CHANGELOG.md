@@ -8,6 +8,7 @@
 - Added Specification Sources and Requirements Traceability report sections with separate implementation and verification evidence, six requirement statuses, and an explicit no-specification path.
 - Added versioned traceability quality checks and an opt-in requirement for new report packs while preserving historical report compatibility.
 - Added regression checks and a focused specification-audit validation scenario; kept code-only evidence independent and preserved existing bug-discovery gates.
+- Fixed public CI to skip local authoring-pack checks when ignored authoring files are absent; all public skill checks remain enabled.
 
 ## 0.1.5 - 2026-08-19
 

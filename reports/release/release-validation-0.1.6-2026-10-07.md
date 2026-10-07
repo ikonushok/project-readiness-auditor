@@ -66,3 +66,13 @@ Missing evidence: repeated specification audits on materially different real pro
 Residual risk: the validator checks structure and nonempty evidence references, not their truth, source precedence, exhaustive requirement coverage, or measured behavior. Historical reports need the explicit required flag to demand the new schema. User-language prose is supported with stable English machine-readable keys. Large/conflicting specs still need auditor judgment and explicit inspected scope.
 
 Next smallest validation step: run the workflow on one real project with a current approved specification and execute its already-authorized acceptance checks, recording requirement decisions and actual output. Broaden beyond that only when the results justify it.
+
+## Publication Preflight And CI Correction
+
+Before tagging/publication, a clean tracked-tree export exposed a pre-existing CI dependency on ignored `AGENTS.md` and root `agents/` files. The authoring-pack step failed, and its three tests errored/failed in the public tree. The initial pushed commit's [GitHub run](https://github.com/ikonushok/project-readiness-auditor/actions/runs/37560956989) also failed. Earlier local success was limited to the author's workspace, where those files exist.
+
+The user explicitly approved the exact `.github/workflows/validate.yml` and `tests/test_validate_pack.py` correction and test command. Public CI now conditionally runs the local authoring step when `AGENTS.md` exists; the local-only test class runs when all required authoring files exist. Missing local files are not added to the public package. Every public-package scaffold, methodology, report, and install check remains enabled.
+
+Post-correction command: `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tests`. Authoring workspace: 32 tests, `OK`. Clean tree at `/private/tmp/pra-release-016-clean`: 32 discovered, 29 executed successfully and 3 local-only tests skipped, `OK (skipped=3)`. The clean tree was created using `git archive --format=tar --output=/private/tmp/pra-release-016-clean.tar HEAD`, extracted with `tar -xf /private/tmp/pra-release-016-clean.tar -C /private/tmp/pra-release-016-clean`, and received the explicitly approved patch. No audited target code was modified.
+
+Publication will use annotated tag `v0.1.6` on the final correction commit after inspecting successful remote CI. The repository topic `spec-kit` describes supported specification input, not a runtime dependency on that toolkit.

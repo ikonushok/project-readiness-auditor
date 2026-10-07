@@ -23,6 +23,7 @@ jobs:
         run: python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor
 
       - name: Validate local agent pack
+        if: ${{ hashFiles('AGENTS.md') != '' }}
         run: python3 scripts/validate_pack.py .
 
       - name: Run validator tests
