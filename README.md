@@ -36,6 +36,10 @@ Choose the smallest mode that answers the current question.
 
 ### 2. Build A Project Map
 
+For `docs-vs-code`, first establish which specification versions apply to the audited release. Record source version/date, approval status, target scope, and applicability; draft, superseded, and future-release proposals are not automatically current obligations.
+
+Map individual requirements, acceptance scenarios, edge cases, and non-functional constraints to implementation and verification evidence. Use `CONFIRMED`, `PARTIAL`, `CONTRADICTED`, `NOT_CHECKED`, `AMBIGUOUS`, or `OUT_OF_SCOPE` as requirement statuses, separate from report verdicts. Distinguish missing implementation from missing verification and inspected tests from executed tests. If no populated specification exists, state that and separate inferred goals. See [Specification Traceability](project-readiness-auditor/references/audit-methodology.md#1c-specification-traceability) for the workflow. The code-only report stays independent of spec claims.
+
 Create the smallest defensible map of the project:
 
 - languages and frameworks;
@@ -423,10 +427,24 @@ To validate the official public example allowlist:
 python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --public-report-examples --report-quality-summary
 ```
 
+For newly generated report packs, require the v1 specification sections:
+
+```bash
+python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --strict-report-quality --require-spec-traceability --customer-report-pack <project-slug>
+```
+
+Strict quality checks validate traceability whenever its version marker is present; `--require-spec-traceability` also rejects missing sections. Historical reports without the marker remain valid under the existing checks. Validation checks the structure, statuses, and presence of evidence references; it does not verify the truth of cited evidence.
+
+For an explicitly requested brief report saved outside the default report pack:
+
+```bash
+python3 project-readiness-auditor/scripts/validate_skill.py project-readiness-auditor --spec-traceability-report /path/to/report.md
+```
+
 CI runs the normal scaffold validator, local agent-pack validator, unit tests, strict public example validation, and `git diff --check`. The skill validator also checks static methodology regressions for prior-report isolation, mandatory bug discovery, readiness evidence guards, and per-project report separation.
 The strict report-quality mode is a local hardening gate for real report failure modes: vague command logs, missing validation basis, `NO_BUG_PROVEN` inside bug candidate tables, unsupported evidence-strength labels, missing-evidence rows in immediate bug-fix batches, and unsafe previous-report comparisons without an after-freeze note plus Better/Worse/Unchanged/Evidence columns. The optional summary groups repeated report defects by stable failure-mode code and example report path, which makes validator/template improvements traceable to observed auditor mistakes.
 
-Current validation level: L5 candidate with residual risk. The public customer examples cover several materially different project types, and [`reports/release/release-readiness-2026-07-29.md`](reports/release/release-readiness-2026-07-29.md) records install verification, public example validation, red-team overclaim checks, and residual risk. This is not full L5 because real Codex app restart/invocation evidence and external red-team review are still missing. Private validation artifacts remain local under ignored `reports/validation/`.
+Release 0.1.6 evidence is recorded in [`reports/release/release-validation-0.1.6-2026-10-07.md`](reports/release/release-validation-0.1.6-2026-10-07.md): package/report checks, 32 regression tests, clean-install smoke, and an independent static specification-audit forward-test. The new workflow has focused L1 evidence; the local authoring-pack consistency check reports L2 separately. This does not establish target runtime behavior, broad cross-project performance, or full L5 release readiness. Real Codex restart/invocation and external red-team evidence remain outside this validation. Private validation artifacts remain local under ignored `reports/validation/`.
 
 ## Repository Layout
 

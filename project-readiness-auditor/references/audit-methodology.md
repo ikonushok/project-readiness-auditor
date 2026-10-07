@@ -165,6 +165,39 @@ Must include:
 
 Do not fix production code in `bug-audit` mode unless the user separately asks for fixes and approves the exact production files and transformation after a bug is reproduced.
 
+## 1c. Specification Traceability
+
+Apply within `docs-vs-code` and the `project-readiness` report; no separate audit mode or agent is needed. Specification Traceability connects expected behavior to evidence without treating the specification as proof. Keep the code-only baseline independent of specification claims.
+
+### Select Applicable Sources
+
+- Discover user-supplied specs, PRDs, `specs/**/spec.md`, acceptance criteria, API contracts, and relevant README claims. Support ordinary documents as well as Spec Kit; installation or execution of a spec tool is unnecessary.
+- Record each source's path/section, version or date (or `UNKNOWN`), approval status, target release/component, and applicability decision in Specification Sources. A template is not a populated specification.
+- Distinguish approved current requirements from draft, superseded, and future-release proposals. Do not make a draft or roadmap item a current-release obligation without user confirmation or other inspected scope evidence.
+- Record conflicting sources and unresolved scope as `AMBIGUOUS`; explain which source is applicable and why when the conflict can be resolved. Do not silently prefer a newer file or infer approval from its filename.
+- If no specification is available, write `Specification availability: NONE`, explain the search scope, and label inferred goals separately. Do not invent requirements or calculate specification coverage.
+
+### Map Requirements To Evidence
+
+New reports use `Specification traceability: v1` and `Specification availability: PRESENT` or `NONE`. With `PRESENT`, populate Specification Sources and Requirements Traceability using the report template.
+
+Preserve requirement IDs such as `FR-001`/`SC-001`; assign local IDs plus source anchors when absent. Identify a requirement by its source and ID together when different specs reuse IDs. Split compound requirements where different clauses have different evidence, adding clause suffixes when necessary. Include acceptance scenarios, negative/edge cases, and measurable non-functional constraints. Record the inspected subset and exclusions when the timebox prevents full coverage; do not imply uninspected requirements were checked.
+
+For every inspected requirement record expected behavior, source, implementation evidence, verification evidence, status, and gap/next check. Cite symbols/lines and test cases. A test file's existence is not proof that it passed; label inspected but unrun tests explicitly. Performance, availability, durability, security, and external-service claims need appropriate measured or runtime/framework evidence, not only code or an intended test command.
+
+Use these requirement statuses (distinct from the report verdict):
+
+- `CONFIRMED`: the cited evidence establishes the whole requirement at the explicitly stated validation depth. Static evidence can confirm a static property; runtime behavior needs corresponding execution evidence.
+- `PARTIAL`: evidence supports only part of the requirement; identify the missing clause or verification.
+- `CONTRADICTED`: inspected evidence conflicts with an applicable requirement; name the precise contradiction and its evidence strength.
+- `NOT_CHECKED`: evidence is missing or the requirement was not inspected/run. This does not mean the capability is absent.
+- `AMBIGUOUS`: wording, source precedence, applicability, or success criteria prevent a defensible judgment.
+- `OUT_OF_SCOPE`: draft, superseded, future-release, or excluded requirement; explain why it is outside this audit.
+
+Separate missing implementation from missing verification. A missing required capability is a `product/API gap` unless stronger correctness evidence establishes a bug. Feed defensible contradictions and acceptance edge cases into Mandatory Bug Discovery; do not promote every unmet requirement to a proven bug. Do not report a coverage percentage without a stated applicable-requirement denominator and inspected scope; evidence coverage and feature completeness are different measures.
+
+For new report packs validate with `--strict-report-quality --require-spec-traceability --customer-report-pack <slug>`. For an explicitly requested brief standalone report use `--spec-traceability-report <path>`, which requires v1 traceability without scanning customer report packs. Strict validation automatically checks versioned traceability sections when present. The explicit flag requires them, while historical reports without the marker remain supported. These checks validate report structure and evidence references, not whether cited evidence truly proves behavior.
+
 ## 2. Build A Project Map
 
 Identify:

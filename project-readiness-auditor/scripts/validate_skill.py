@@ -24,6 +24,17 @@ REQUIRED_FILES = [
 
 VERSION_RE = re.compile(r"^\d+\.\d+\.\d+$")
 
+REQUIREMENT_STATUSES = {
+    "CONFIRMED", "PARTIAL", "CONTRADICTED", "NOT_CHECKED", "AMBIGUOUS", "OUT_OF_SCOPE",
+}
+SPEC_SOURCE_COLUMNS = (
+    "source", "version / date", "approval status", "target release / component", "applicability decision",
+)
+REQUIREMENT_COLUMNS = (
+    "requirement", "source", "expected behavior", "implementation evidence",
+    "verification evidence", "status", "gap / next check",
+)
+
 REQUIRED_TERMS = {
     "SKILL.md": [
         "Project Readiness Auditor",
@@ -57,6 +68,9 @@ REQUIRED_TERMS = {
         "previous audit reports",
         "complete and freeze the new audit",
         "comparison artifacts",
+        "Specification Sources",
+        "Requirements Traceability",
+        "Specification traceability: v1",
     ],
     "references/audit-methodology.md": [
         "Evidence Rules",
@@ -86,6 +100,9 @@ REQUIRED_TERMS = {
         "product maturity",
         "top-3 immediate bug-fix batch",
         "Build A Project Map",
+        "Specification Traceability",
+        "Specification availability: NONE",
+        "OUT_OF_SCOPE",
         "Check Cross-Part Contracts",
         "Build The Closure Plan",
         "Report",
@@ -110,6 +127,9 @@ REQUIRED_TERMS = {
         "Fail Conditions",
     ],
     "references/report-template.md": [
+        "Specification Sources",
+        "Requirements Traceability",
+        "Specification traceability: v1",
         "Summary",
         "Report Pack Rules",
         "Full report pack is the default for every non-brief project audit",
@@ -239,10 +259,12 @@ QUALITY_FAILURE_MODE_DESCRIPTIONS = {
     "COMPARISON_PREVIOUS_ARTIFACT": "Previous-report comparison does not name the previous report artifact.",
     "COMPARISON_TABLE_MISSING": "Previous-report comparison section has no comparison table.",
     "COMPARISON_DELTA_COLUMNS": "Previous-report comparison table lacks Better/Worse/Unchanged/Evidence columns.",
+    "SPEC_TRACEABILITY": "Specification traceability has missing scope, malformed rows, or unsupported evidence/status fields.",
     "UNCLASSIFIED": "Validator emitted an error that is not yet mapped to a product failure mode.",
 }
 QUALITY_FAILURE_MODE_PATTERNS = [
     ("PACK_STRUCTURE", re.compile(r"^customer report pack ")),
+    ("SPEC_TRACEABILITY", re.compile(r" specification traceability ")),
     ("MISSING_VALIDATION_BASIS", re.compile(r" missing Validation basis$")),
     ("VAGUE_COMMAND_ENTRY", re.compile(r" has vague command entry: ")),
     ("NO_BUG_PROVEN_AS_CANDIDATE", re.compile(r" puts NO_BUG_PROVEN in Bug Candidates$")),
@@ -505,14 +527,16 @@ def section_text(text: str, heading: str) -> str:
     lines = text.splitlines()
     collected: list[str] = []
     in_section = False
-    marker = f"## {heading}".casefold()
+    section_level = 0
 
     for line in lines:
         stripped = line.strip()
-        if stripped.casefold() == marker:
+        match = re.fullmatch(r"(#{2,6})[ \t]+(.+?)(?:[ \t]+#+)?[ \t]*", stripped)
+        if match and match.group(2).casefold() == heading.casefold() and not in_section:
             in_section = True
+            section_level = len(match.group(1))
             continue
-        if in_section and stripped.startswith("## "):
+        if in_section and match and len(match.group(1)) <= section_level:
             break
         if in_section:
             collected.append(line)
@@ -526,7 +550,17 @@ def table_rows(section: str) -> list[list[str]]:
         stripped = line.strip()
         if not stripped.startswith("|") or not stripped.endswith("|"):
             continue
-        cells = [cell.strip() for cell in stripped.strip("|").split("|")]
+        cells: list[str] = []
+        cell = ""
+        escaped = False
+        for char in stripped[1:-1]:
+            if char == "|" and not escaped:
+                cells.append(cell.strip())
+                cell = ""
+            else:
+                cell += char
+            escaped = not escaped if char == "\\" else False
+        cells.append(cell.strip())
         if all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells):
             continue
         rows.append(cells)
@@ -570,7 +604,87 @@ def is_exact_command_entry(entry: str) -> bool:
     return first_token in SHELL_COMMAND_PREFIXES or first_token.startswith("./")
 
 
-def validate_report_quality(report_dir: Path, filename: str, report_type: str) -> list[str]:
+def informative_cell(value: str) -> bool:
+    return value.strip().strip("`").strip().casefold() not in {
+        "", "-", "—", "none", "n/a", "unknown", "tbd", "missing evidence",
+    }
+
+
+def validate_spec_traceability(text: str, display_path: str, required: bool = False) -> list[str]:
+    errors: list[str] = []
+    prefix = f"customer report quality {display_path} specification traceability"
+    markers = re.findall(r"^[ \t]*-?[ \t]*Specification traceability:[ \t]*(\S+)[ \t]*$", text, re.MULTILINE)
+    if not markers and not required:
+        return errors  # Historical reports remain valid without the versioned schema.
+    if markers != ["v1"]:
+        return [f"{prefix} requires exactly one v1 marker"]
+
+    sources = section_text(text, "Specification Sources")
+    availability = re.findall(r"^[ \t]*-?[ \t]*Specification availability:[ \t]*(\S+)[ \t]*$", sources, re.MULTILINE)
+    if availability not in (["PRESENT"], ["NONE"]):
+        return [f"{prefix} requires availability PRESENT or NONE in Specification Sources"]
+    if not re.search(r"Inspected requirement scope:[ \t]+\S", sources):
+        errors.append(f"{prefix} missing inspected requirement scope")
+    requirements = section_text(text, "Requirements Traceability")
+    if availability == ["NONE"]:
+        if table_rows(sources) or table_rows(requirements):
+            errors.append(f"{prefix} NONE must omit specification and requirement tables")
+        if not re.search(r"No-specification basis:[ \t]+\S", sources):
+            errors.append(f"{prefix} NONE missing No-specification basis (search scope and inferred goals)")
+        return errors
+
+    for heading, section, columns in (
+        ("Specification Sources", sources, SPEC_SOURCE_COLUMNS),
+        ("Requirements Traceability", requirements, REQUIREMENT_COLUMNS),
+    ):
+        rows = table_rows(section)
+        if len(rows) < 2:
+            errors.append(f"{prefix} {heading} missing populated table")
+            continue
+        header = [cell.casefold() for cell in rows[0]]
+        if len(header) != len(set(header)) or not set(columns).issubset(header):
+            errors.append(f"{prefix} {heading} missing or duplicate columns")
+            continue
+        seen: set[tuple[str, str]] = set()
+        for number, row in enumerate(rows[1:], 1):
+            context = f"{prefix} {heading} row {number}"
+            if len(row) != len(header):
+                errors.append(f"{context} has wrong column count")
+                continue
+            values = dict(zip(header, row))
+            if heading == "Specification Sources":
+                for column in columns:
+                    metadata_unknown = (
+                        column in {"version / date", "approval status"}
+                        and values[column].strip().strip("`").casefold() == "unknown"
+                    )
+                    if not informative_cell(values[column]) and not metadata_unknown:
+                        errors.append(f"{context} missing {column}")
+                continue
+            for column in ("requirement", "source", "expected behavior"):
+                if not informative_cell(values[column]):
+                    errors.append(f"{context} missing {column}")
+            identity = values["requirement"].strip().strip("`").casefold()
+            identity_key = (values["source"].strip().strip("`").casefold(), identity)
+            if identity_key in seen:
+                errors.append(f"{context} duplicate requirement ID and source: {identity}")
+            seen.add(identity_key)
+            status = values["status"].strip().strip("`")
+            if status not in REQUIREMENT_STATUSES:
+                errors.append(f"{context} unsupported status: {status}")
+                continue
+            if status in {"CONFIRMED", "PARTIAL", "CONTRADICTED"} and not informative_cell(values["implementation evidence"]):
+                errors.append(f"{context} {status} missing implementation evidence")
+            if status == "CONFIRMED" and not informative_cell(values["verification evidence"]):
+                errors.append(f"{context} CONFIRMED missing verification evidence")
+            if status != "CONFIRMED" and not informative_cell(values["gap / next check"]):
+                errors.append(f"{context} {status} missing gap / next check")
+    return errors
+
+
+def validate_report_quality(
+    report_dir: Path, filename: str, report_type: str, require_spec_traceability: bool = False,
+) -> list[str]:
     errors: list[str] = []
     path = report_dir / filename
     text = read_text(path)
@@ -584,6 +698,9 @@ def validate_report_quality(report_dir: Path, filename: str, report_type: str) -
             errors.append(f"customer report quality {display_path} has vague command entry: {entry}")
 
     errors.extend(validate_comparison_quality(text, display_path))
+
+    if report_type == "project-readiness":
+        errors.extend(validate_spec_traceability(text, display_path, required=require_spec_traceability))
 
     if report_type != "bug-audit":
         return errors
@@ -696,10 +813,13 @@ def validate_customer_report_pack(
     strict_quality: bool = False,
     report_pack: str | None = None,
     public_examples: bool = False,
+    require_spec_traceability: bool = False,
 ) -> list[str]:
     errors: list[str] = []
     customer_root = repo_root / CUSTOMER_REPORTS_DIR
     if not customer_root.exists():
+        if require_spec_traceability:
+            return [f"customer report pack directory not found: {customer_root}"]
         return errors
 
     if report_pack is not None and public_examples:
@@ -716,6 +836,9 @@ def validate_customer_report_pack(
             return [f"customer report pack not found: {report_pack}"]
     else:
         report_dirs = sorted(path for path in customer_root.iterdir() if path.is_dir())
+
+    if require_spec_traceability and not report_dirs:
+        return ["customer report pack missing: no report directories to validate"]
 
     for report_dir in report_dirs:
         filenames = [path.name for path in report_dir.iterdir() if path.is_file()]
@@ -735,8 +858,10 @@ def validate_customer_report_pack(
                         errors.append(
                             f"customer report pack {report_dir.name}/{filename} missing required term: {term}"
                         )
-                if strict_quality:
-                    errors.extend(validate_report_quality(report_dir, filename, report_type))
+                if strict_quality or require_spec_traceability:
+                    errors.extend(validate_report_quality(
+                        report_dir, filename, report_type, require_spec_traceability=require_spec_traceability,
+                    ))
 
     return errors
 
@@ -748,6 +873,16 @@ def main() -> int:
         "--strict-report-quality",
         action="store_true",
         help="Also validate report quality failure modes under reports/customer.",
+    )
+    parser.add_argument(
+        "--spec-traceability-report",
+        type=Path,
+        help="Validate one brief project-readiness report at any path, requiring v1 specification traceability.",
+    )
+    parser.add_argument(
+        "--require-spec-traceability",
+        action="store_true",
+        help="Require v1 specification traceability in project-readiness reports; also enable quality checks.",
     )
     parser.add_argument(
         "--customer-report-pack",
@@ -779,10 +914,16 @@ def main() -> int:
     try:
         errors = validate(root)
         errors.extend(validate_methodology_regressions(root))
+        if args.spec_traceability_report is not None:
+            report_path = args.spec_traceability_report.expanduser().resolve()
+            errors.extend(validate_report_quality(
+                report_path.parent, report_path.name, "project-readiness", require_spec_traceability=True,
+            ))
         repo_root = root.parent
         validate_reports = (
             args.all_customer_report_packs
             or args.strict_report_quality
+            or args.require_spec_traceability
             or args.customer_report_pack is not None
             or args.public_report_examples
         )
@@ -793,6 +934,7 @@ def main() -> int:
                     strict_quality=args.strict_report_quality,
                     report_pack=args.customer_report_pack,
                     public_examples=args.public_report_examples,
+                    require_spec_traceability=args.require_spec_traceability,
                 )
             )
     except UnicodeDecodeError as exc:

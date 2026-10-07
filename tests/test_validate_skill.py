@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -134,6 +136,148 @@ def write_clean_public_examples(repo_root: Path) -> None:
 
 
 class ValidateSkillTests(unittest.TestCase):
+    def traceability_report(self, rows: str | None = None, level: str = "##") -> str:
+        if rows is None:
+            rows = "| FR-001 | spec.md#fr-001 | Trim input | parser.py:3 | Static inspection parser.py:3 | CONFIRMED | - |"
+        return "\n".join([
+            "Report type: `project-readiness`",
+            "Validation basis: static inspection, tests not run.",
+            f"{level} Specification Sources",
+            "- Specification traceability: v1",
+            "- Specification availability: PRESENT",
+            "- Inspected requirement scope: FR-001 through FR-006, CLI release 1.",
+            "| Source | Version / date | Approval status | Target release / component | Applicability decision |",
+            "|---|---|---|---|---|",
+            "| spec.md | UNKNOWN | UNKNOWN | CLI release 1 | Scope supplied by user; approval unknown |",
+            f"{level} Requirements Traceability",
+            "| Requirement | Source | Expected behavior | Implementation evidence | Verification evidence | Status | Gap / next check |",
+            "|---|---|---|---|---|---|---|",
+            rows,
+        ])
+
+    def test_spec_traceability_accepts_all_statuses_at_both_heading_depths(self) -> None:
+        rows = "\n".join([
+            "| FR-001 | spec.md#1 | Trim input | parser.py:3 | Static inspection parser.py:3 | CONFIRMED | - |",
+            "| FR-002 | spec.md#2 | Normalize and validate | parser.py:4 | - | PARTIAL | Validation is missing |",
+            "| FR-003 | spec.md#3 | Keep case | parser.py:4 lowercases | - | CONTRADICTED | Compare approved scope with implementation |",
+            "| FR-004 | spec.md#4 | p95 under 100ms | - | - | NOT_CHECKED | Run an approved load check |",
+            "| FR-005 | spec.md#5 | Preserve stable ordering | - | - | AMBIGUOUS | Clarify meaning of stable |",
+            "| FR-006 | roadmap.md#6 | Export JSON | - | - | OUT_OF_SCOPE | Future release draft |",
+        ])
+        for level in ("##", "###"):
+            with self.subTest(level=level):
+                self.assertEqual([], validator.validate_spec_traceability(self.traceability_report(rows, level), "sample.md", required=True))
+
+    def test_spec_traceability_rejects_unsupported_confirmation_and_incomplete_rows(self) -> None:
+        cases = [
+            ("| FR-001 | spec.md | Trim | parser.py:3 | - | CONFIRMED | - |", "missing verification evidence"),
+            ("| FR-001 | spec.md | Trim | - | Static review | CONFIRMED | - |", "missing implementation evidence"),
+            ("| FR-001 | spec.md | Trim | - | - | NOT_CHECKED | - |", "missing gap / next check"),
+            ("| FR-001 | spec.md | Trim | - | - | PASS | next |", "unsupported status"),
+            ("| FR-001 | spec.md | Trim | parser.py:3 | static | CONFIRMED |", "wrong column count"),
+            ("| FR-001 | - | Trim | parser.py:3 | static | CONFIRMED | - |", "missing source"),
+        ]
+        for row, signal in cases:
+            with self.subTest(signal=signal):
+                errors = validator.validate_spec_traceability(self.traceability_report(row), "sample.md")
+                self.assertTrue(any(signal in error for error in errors), errors)
+
+    def test_spec_traceability_rejects_duplicate_ids_and_empty_scope(self) -> None:
+        report = self.traceability_report()
+        duplicate = report + "\n" + report.splitlines()[-1]
+        self.assertTrue(any("duplicate requirement ID" in e for e in validator.validate_spec_traceability(duplicate, "sample.md")))
+        blank_scope = report.replace("FR-001 through FR-006, CLI release 1.", "")
+        self.assertTrue(any("missing inspected requirement scope" in e for e in validator.validate_spec_traceability(blank_scope, "sample.md")))
+
+    def test_spec_traceability_accepts_explicit_no_spec_and_rejects_invented_rows(self) -> None:
+        report = "\n".join([
+            "## Specification Sources",
+            "- Specification traceability: v1",
+            "- Specification availability: NONE",
+            "- Inspected requirement scope: No documented requirements available.",
+            "- No-specification basis: Inspected README/docs/specs; inferred goal: normalize CLI input.",
+        ])
+        self.assertEqual([], validator.validate_spec_traceability(report, "sample.md", required=True))
+        invented = report + "\n## Requirements Traceability\n| Requirement | Status |\n|---|---|\n| FR-001 | CONFIRMED |"
+        self.assertTrue(any("NONE must omit" in e for e in validator.validate_spec_traceability(invented, "sample.md")))
+        no_basis = report.split("- No-specification basis:")[0]
+        self.assertTrue(any("missing No-specification basis" in e for e in validator.validate_spec_traceability(no_basis, "sample.md")))
+
+    def test_spec_traceability_preserves_legacy_but_required_gate_rejects_it(self) -> None:
+        self.assertEqual([], validator.validate_spec_traceability("Legacy report", "sample.md"))
+        self.assertTrue(validator.validate_spec_traceability("Legacy report", "sample.md", required=True))
+        legacy_matrix = "## Requirements Traceability\n| Requirement | Status |\n|---|---|\n| FR-001 | Implemented |"
+        self.assertEqual([], validator.validate_spec_traceability(legacy_matrix, "sample.md"))
+        for report in (self.traceability_report().replace("v1", "v2"), self.traceability_report().replace("Specification traceability: v1", "Other metadata: v1")):
+            self.assertTrue(validator.validate_spec_traceability(report, "sample.md", required=True))
+
+    def test_spec_traceability_handles_scoped_ids_escaped_pipes_and_closed_headings(self) -> None:
+        report = self.traceability_report()
+        report += "\n| FR-001 | draft.md#fr-001 | Sort names | - | - | OUT_OF_SCOPE | Future draft |"
+        report = report.replace("Trim input", r"Trim Ada\|Bob input")
+        report = report.replace("## Specification Sources", "## Specification Sources ##")
+        report = report.replace("## Requirements Traceability", "## Requirements Traceability ##")
+        self.assertEqual([], validator.validate_spec_traceability(report, "sample.md", required=True))
+        self.assertEqual([["a", r"b\|c", "d"]], validator.table_rows(r"| a | b\|c | d |"))
+
+    def test_spec_traceability_gate_is_integrated_and_scoped_to_readiness_report(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            reports = root / "reports/customer/sample"
+            write_clean_report_pack(reports)
+            errors = validator.validate_customer_report_pack(root, require_spec_traceability=True)
+            self.assertEqual(1, len(errors), errors)
+            self.assertIn("project-readiness-2026-08-15.md", errors[0])
+            self.assertNotIn("code-only", errors[0])
+            path = reports / "project-readiness-2026-08-15.md"
+            path.write_text(path.read_text() + "\n" + self.traceability_report(), encoding="utf-8")
+            self.assertEqual([], validator.validate_customer_report_pack(root, require_spec_traceability=True))
+
+    def test_required_spec_gate_rejects_missing_customer_reports(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            self.assertTrue(validator.validate_customer_report_pack(root, require_spec_traceability=True))
+            (root / "reports/customer").mkdir(parents=True)
+            self.assertTrue(validator.validate_customer_report_pack(root, require_spec_traceability=True))
+
+    def test_spec_traceability_rejects_missing_tables_columns_and_source_metadata(self) -> None:
+        report = self.traceability_report()
+        cases = [
+            (report.split("## Requirements Traceability")[0], "missing populated table"),
+            (report.replace("| Verification evidence |", "| Test plan |"), "missing or duplicate columns"),
+            (report.replace("| spec.md | UNKNOWN | UNKNOWN |", "| spec.md | - | UNKNOWN |"), "missing version / date"),
+            (report.replace("| Applicability decision |", "| Source |"), "missing or duplicate columns"),
+        ]
+        for text, signal in cases:
+            with self.subTest(signal=signal):
+                errors = validator.validate_spec_traceability(text, "sample.md")
+                self.assertTrue(any(signal in error for error in errors), errors)
+
+    def test_spec_traceability_cli_flag_requires_new_sections(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            root = Path(tmpdir)
+            skill = root / "project-readiness-auditor"
+            shutil.copytree(REPO_ROOT / "project-readiness-auditor", skill, ignore=shutil.ignore_patterns("__pycache__", "*.pyc", ".DS_Store"))
+            shutil.copy2(REPO_ROOT / "VERSION", root / "VERSION")
+            reports = root / "reports/customer/sample"
+            write_clean_report_pack(reports)
+            command = [sys.executable, "-B", str(skill / "scripts/validate_skill.py"), str(skill), "--require-spec-traceability", "--customer-report-pack", "sample"]
+            rejected = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(1, rejected.returncode, rejected.stdout + rejected.stderr)
+            self.assertIn("requires exactly one v1 marker", rejected.stdout)
+            path = reports / "project-readiness-2026-08-15.md"
+            path.write_text(path.read_text() + "\n" + self.traceability_report(), encoding="utf-8")
+            accepted = subprocess.run(command, capture_output=True, text=True)
+            self.assertEqual(0, accepted.returncode, accepted.stdout + accepted.stderr)
+            standalone = root / "brief-audit.md"
+            standalone.write_text(self.traceability_report(), encoding="utf-8")
+            single_command = command[:4] + ["--spec-traceability-report", str(standalone)]
+            single = subprocess.run(single_command, capture_output=True, text=True)
+            self.assertEqual(0, single.returncode, single.stdout + single.stderr)
+            standalone.write_text("Validation basis: static inspection.", encoding="utf-8")
+            missing = subprocess.run(single_command, capture_output=True, text=True)
+            self.assertEqual(1, missing.returncode, missing.stdout + missing.stderr)
+
     def test_live_skill_package_passes_static_and_methodology_checks(self) -> None:
         skill_root = REPO_ROOT / "project-readiness-auditor"
 

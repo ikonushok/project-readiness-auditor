@@ -15,7 +15,7 @@ At the start of a task, read `VERSION` in this skill directory to identify the i
 
 1. Choose the audit mode:
    - `code-only`: inspect code, tests, configs, migrations, CI, Docker/Helm, and scripts.
-   - `docs-vs-code`: compare documentation claims with actual implementation.
+   - `docs-vs-code`: compare documentation claims with actual implementation. Read the Specification Traceability section in `references/audit-methodology.md`; identify applicable spec versions and map individual requirements, acceptance scenarios, and non-functional constraints to implementation and verification evidence.
    - `runtime`: run setup, build, tests, smoke checks, or local scenarios when feasible.
    - `security`: inspect auth, secrets, CORS, permissions, debug endpoints, and external calls.
    - `production-readiness`: inspect reproducibility, deployment, observability, migrations, rollback, and operational risk.
@@ -27,7 +27,7 @@ At the start of a task, read `VERSION` in this skill directory to identify the i
 5. For every non-brief audit, produce these per-project report files and do not collapse them into one report:
    - `index.md`: decision brief linking the reports, overall verdict, stage, top risks, commands, missing evidence, residual risk, and work order.
    - `code-only-project-readiness`: code, tests, executable config, CI/deploy evidence only; documentation is not proof.
-   - `project-readiness`: goals/docs-vs-code readiness against stated project objectives.
+   - `project-readiness`: goals/docs-vs-code readiness against stated project objectives, with Specification Sources and Requirements Traceability sections using `Specification traceability: v1`. If no specification is available, state that explicitly and separate inferred goals from requirements.
    - `bug-audit`: mandatory ranked bug candidates with reproduction plan and test-first next steps.
 6. Write the full report pack to `reports/customer/<project-slug>/` by default when the workspace is writable. If that path is unavailable, write to the user-approved report directory or return the same four named reports in chat; do not silently collapse the pack.
 7. Report language follows the user's request language unless the user explicitly asks for another language. For mixed-language requests, use the language of the main audit instruction.
@@ -106,6 +106,7 @@ Each report must include:
 - executive narrative;
 - code-visible tasks for code-only reports;
 - product maturity view for product/readiness reports;
+- specification scope, requirement coverage, and unverified acceptance criteria for docs-vs-code reports; keep specs excluded from code-only evidence;
 - mandatory bug discovery result;
 - top-3 immediate bug batch and backlog split when bug candidates exist;
 - findings ordered by severity;

@@ -287,6 +287,29 @@ Use for product/customer audits. Name phases, contours, operational readiness, a
 |---|---|---|---|
 |  |  |  |  |
 
+### Specification Sources
+
+Keep the machine-readable field labels and table headers below in English; write explanatory prose and cell content in the requested report language.
+
+- Specification traceability: v1
+- Specification availability: PRESENT
+- Inspected requirement scope:
+- Excluded or conflicting sources and applicability rationale:
+
+| Source | Version / date | Approval status | Target release / component | Applicability decision |
+|---|---|---|---|---|
+|  |  |  |  |  |
+
+Use `Specification availability: NONE` when no populated specification is available. Include `No-specification basis:` with the search scope and separately labeled inferred goals; omit empty source/requirement tables in that case. `UNKNOWN` is valid for missing version or approval metadata. Draft, superseded, and future-release sources require an explicit applicability decision.
+
+### Requirements Traceability
+
+| Requirement | Source | Expected behavior | Implementation evidence | Verification evidence | Status | Gap / next check |
+|---|---|---|---|---|---|---|
+| FR-001 |  |  |  |  | NOT_CHECKED |  |
+
+Use `CONFIRMED`, `PARTIAL`, `CONTRADICTED`, `NOT_CHECKED`, `AMBIGUOUS`, or `OUT_OF_SCOPE`; these are requirement statuses, not report verdicts. Include acceptance scenarios, edge cases, and non-functional requirements within the stated scope. Cite implementation and verification evidence separately; distinguish tests inspected from tests executed. Explain missing implementation, missing verification, ambiguities, and exclusions in Gap / next check. Read the Specification Traceability rules in the methodology before assigning a status.
+
 ### Reproducibility
 
 - Dependency evidence:
